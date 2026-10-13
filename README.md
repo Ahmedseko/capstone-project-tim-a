@@ -204,10 +204,6 @@ Login → Dashboard → Produk → Stok → Penjualan → Closing Harian → Lap
 - **Owner/Admin**: akses penuh (produk, katalog harga, stok, penjualan, pembatalan transaksi, closing, laporan, pengaturan, manajemen pengguna).
 - **Staff**: melihat produk, input stok masuk, mencatat penjualan dan mencetak struk, closing harian. Tidak memiliki akses ke Katalog Harga, Laporan, Pengaturan, dan tidak bisa membatalkan transaksi.
 
-## Catatan Pengembangan
-
-Proyek ini dikembangkan oleh tim dengan bantuan AI (Claude, Anthropic) sebagai alat bantu: penulisan kode, perbaikan bug, dan dokumentasi dikerjakan bersama AI. Kebutuhan toko, keputusan fitur (misalnya harga per ml, harga botol, katalog harga, dan pembatalan transaksi), serta pengujian dan penentuan hasil akhir dilakukan oleh tim.
-
 ## Memperbarui Database yang Sudah Berjalan
 
 Instalasi baru otomatis memakai `database/schema.sql` terbaru. Kalau kamu **sudah punya database lama** dengan data yang ingin dipertahankan, jalankan migrasi di `database/migrations/` **berurutan, masing-masing sekali** (`001_price_catalog.sql`, `002_sales_upgrade.sql`, lalu `003_cash_and_cost.sql`). Contoh dengan Docker:
