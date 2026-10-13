@@ -1,6 +1,14 @@
 # Global Parfum Kutoarjo
 
-Sistem Informasi Manajemen Penjualan dan Stok UMKM Parfum — aplikasi web sederhana untuk mengelola produk, stok, penjualan, closing harian, dan laporan toko parfum.
+Sistem Informasi Manajemen Penjualan dan Stok UMKM Parfum — aplikasi web untuk mengelola produk, stok, penjualan, closing harian, dan laporan toko parfum.
+
+## Fitur Utama
+
+- **Racik parfum per ml**: parfum dijual per mililiter (mis. Baccarat Rp4.000/ml) dan dimasukkan ke botol pilihan pembeli. Harga = `isi (ml) × harga per ml + harga botol`. Ukuran botol kelipatan 5 ml (5–100) dan isi tidak boleh melebihi ukuran botol.
+- **Katalog Harga** (admin): daftar harga eceran acuan. Saat menambah produk, cukup ketik namanya dan harga terisi otomatis. Mengubah harga katalog ikut mengubah produk terkait; transaksi lama tidak berubah.
+- **Stok** dalam ml (varian) dan pcs (botol & produk lain), lengkap dengan riwayat pergerakan stok.
+- **Penjualan**: diskon (Rp/%), catatan pembeli, uang diterima + kembalian, **struk** yang bisa dicetak ke printer apa pun atau disimpan sebagai PDF, dan **pembatalan transaksi** oleh admin (stok dikembalikan, keluar dari laporan).
+- **Closing harian**, **laporan** (dashboard, grafik, ekspor Excel), serta pengaturan toko dan pengguna.
 
 ## Struktur Proyek
 
@@ -82,7 +90,7 @@ Masih di terminal yang sama, di dalam folder `global-parfum-kutoarjo`, jalankan:
 docker compose up -d
 ```
 
-Perintah ini otomatis membuat database MySQL beserta akun login awal (lewat `database/schema.sql` dan `database/seed.sql`), semua dalam satu langkah. Tidak ada data produk/penjualan contoh — aplikasi mulai dalam keadaan kosong, tinggal diisi sendiri lewat menu Produk setelah login. Tunggu sampai proses selesai (biasanya beberapa detik sampai 1 menit di percobaan pertama, karena perlu mengunduh image MySQL).
+Perintah ini otomatis membuat database MySQL beserta akun login awal (lewat `database/schema.sql` dan `database/seed.sql`), semua dalam satu langkah. Data contoh yang ikut terpasang: 6 varian parfum (stok 1.000 ml), 5 ukuran botol (stok 50 pcs), dan katalog harganya. Belum ada transaksi penjualan — silakan coba lewat menu Penjualan. Tunggu sampai proses selesai (biasanya beberapa detik sampai 1 menit di percobaan pertama, karena perlu mengunduh image MySQL).
 
 Cek berhasil dengan:
 
@@ -173,14 +181,35 @@ Kalau sudah selesai pakai:
 | Owner/Admin | `admin@globalparfum.id` | `admin123` |
 | Staff | `staff@globalparfum.id` | `staff123` |
 
+> Akun ini dibuat otomatis oleh `database/seed.sql` pada **instalasi lokal** (Langkah 4). Server lain yang sudah dipakai sungguhan bisa saja memakai kata sandi berbeda. Ganti kata sandi bawaan sebelum aplikasi dipakai di internet.
+
+## Cara Mencoba Cepat (untuk Penilai)
+
+1. Login sebagai **Admin** → buka **Katalog Harga**: lihat daftar harga per ml dan harga botol; coba ubah satu harga.
+2. Buka **Produk → Tambah Produk**, ketik nama dari katalog (mis. `Vanilla`): kategori, satuan, dan harga terisi otomatis.
+3. Buka **Penjualan → Racik Parfum**: pilih varian, ukuran botol, dan isi (mis. 25 ml dalam botol 30 ml) → tambah ke keranjang → isi diskon / uang diterima → **Simpan Penjualan**. Struk muncul; coba **Cetak / Simpan PDF**.
+4. Dari daftar **Transaksi Hari Ini**, klik **Detail** lalu **Batalkan Transaksi** (admin): stok kembali dan transaksi keluar dari laporan.
+5. Lanjutkan ke **Stok** (riwayat), **Closing Harian**, dan **Laporan**.
+
 ## Alur Utama
 
 Login → Dashboard → Produk → Stok → Penjualan → Closing Harian → Laporan
 
 ## Catatan Peran
 
-- **Owner/Admin**: akses penuh (produk, stok, penjualan, closing, laporan, pengaturan, manajemen pengguna).
-- **Staff**: melihat produk, input stok masuk, mencatat penjualan, closing harian. Tidak memiliki akses ke Laporan dan Pengaturan.
+- **Owner/Admin**: akses penuh (produk, katalog harga, stok, penjualan, pembatalan transaksi, closing, laporan, pengaturan, manajemen pengguna).
+- **Staff**: melihat produk, input stok masuk, mencatat penjualan dan mencetak struk, closing harian. Tidak memiliki akses ke Katalog Harga, Laporan, Pengaturan, dan tidak bisa membatalkan transaksi.
+
+## Memperbarui Database yang Sudah Berjalan
+
+Instalasi baru otomatis memakai `database/schema.sql` terbaru. Kalau kamu **sudah punya database lama** dengan data yang ingin dipertahankan, jalankan migrasi di `database/migrations/` **berurutan, masing-masing sekali** (`001_price_catalog.sql`, lalu `002_sales_upgrade.sql`). Contoh dengan Docker:
+
+```bash
+docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/001_price_catalog.sql
+docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/002_sales_upgrade.sql
+```
+
+(Di PowerShell tanda `<` tidak didukung — gunakan Git Bash, atau `Get-Content file.sql | docker exec -i gpk-mysql mysql -uroot -proot`.)
 
 ## Troubleshooting
 
