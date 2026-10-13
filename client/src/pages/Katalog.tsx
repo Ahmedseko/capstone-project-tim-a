@@ -19,7 +19,7 @@ import type { CatalogItem, ProductUnit } from '../types';
 import { CATEGORIES, CATEGORY_DEFAULTS, UNITS } from '../utils/productOptions';
 import { formatCurrency } from '../utils/format';
 
-const emptyForm: CatalogInput = { name: '', category: CATEGORIES[0], size: 'curah', unit: 'ml', price: 0 };
+const emptyForm: CatalogInput = { name: '', category: CATEGORIES[0], size: 'curah', unit: 'ml', price: 0, costPrice: 0 };
 
 export default function Katalog() {
   const { showToast } = useToast();
@@ -58,7 +58,7 @@ export default function Katalog() {
 
   function openEdit(item: CatalogItem) {
     setEditing(item);
-    setForm({ name: item.name, category: item.category, size: item.size, unit: item.unit, price: item.price });
+    setForm({ name: item.name, category: item.category, size: item.size, unit: item.unit, price: item.price, costPrice: item.costPrice });
     setModalOpen(true);
   }
 
@@ -131,7 +131,7 @@ export default function Katalog() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-bg/50">
-                {['Nama', 'Kategori', 'Ukuran', 'Harga Eceran', 'Produk Terkait', ''].map((h) => (
+                {['Nama', 'Kategori', 'Ukuran', 'Harga Eceran', 'Modal', 'Produk Terkait', ''].map((h) => (
                   <th key={h} className="text-left font-medium text-text-faint text-[11px] uppercase tracking-wide px-3.5 py-2.5">
                     {h}
                   </th>
@@ -141,7 +141,7 @@ export default function Katalog() {
             <tbody className="divide-y divide-border">
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <EmptyState icon={Tags} message="Katalog masih kosong." />
                   </td>
                 </tr>
@@ -154,6 +154,9 @@ export default function Katalog() {
                   <td className="px-3.5 py-2.5 text-text font-mono tnum">
                     {formatCurrency(i.price)}
                     <span className="text-text-faint"> /{i.unit === 'ml' ? 'ml' : 'pcs'}</span>
+                  </td>
+                  <td className="px-3.5 py-2.5 text-text-muted font-mono tnum">
+                    {i.costPrice ? formatCurrency(i.costPrice) : <span className="text-text-faint">-</span>}
                   </td>
                   <td className="px-3.5 py-2.5 text-text-muted font-mono tnum">{i.linkedCount}</td>
                   <td className="px-3.5 py-2.5">
@@ -238,6 +241,15 @@ export default function Katalog() {
               />
             </FormField>
           </div>
+          <FormField label={`Harga modal per ${form.unit === 'ml' ? 'ml' : 'pcs'} (Rp, opsional)`}>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Untuk menghitung laba"
+              value={form.costPrice || ''}
+              onChange={(e) => setForm({ ...form, costPrice: Math.max(0, Number(e.target.value)) })}
+            />
+          </FormField>
         </div>
       </Modal>
     </div>

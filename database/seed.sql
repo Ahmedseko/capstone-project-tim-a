@@ -22,22 +22,22 @@ INSERT INTO settings (store_name, owner_name, address, phone, currency, default_
 -- Harga di katalog hanyalah contoh — admin mengubahnya lewat menu Katalog Harga.
 -- Tidak ada transaksi penjualan contoh; coba lewat menu Penjualan setelah login.
 -- ==========================================================
-INSERT INTO price_catalog (name, category, size, unit, price) VALUES
-  ('Baccarat',      'Parfum Refill', 'curah', 'ml',    4000),
-  ('Black Opium',   'Parfum Refill', 'curah', 'ml',    3500),
-  ('Sugar Baby',    'Parfum Refill', 'curah', 'ml',    3000),
-  ('Sauvage',       'Parfum Refill', 'curah', 'ml',    3500),
-  ('Wangi Sabun',   'Parfum Refill', 'curah', 'ml',    2000),
-  ('Vanilla',       'Parfum Refill', 'curah', 'ml',    2500),
-  ('Botol 10 ml',   'Botol Kosong',  '10 ml', 'botol', 3000),
-  ('Botol 20 ml',   'Botol Kosong',  '20 ml', 'botol', 4000),
-  ('Botol 30 ml',   'Botol Kosong',  '30 ml', 'botol', 5500),
-  ('Botol 50 ml',   'Botol Kosong',  '50 ml', 'botol', 7500),
-  ('Botol 100 ml',  'Botol Kosong',  '100 ml', 'botol', 12000);
+INSERT INTO price_catalog (name, category, size, unit, price, cost_price) VALUES
+  ('Baccarat',      'Parfum Refill', 'curah', 'ml',    4000, 2400),
+  ('Black Opium',   'Parfum Refill', 'curah', 'ml',    3500, 2100),
+  ('Sugar Baby',    'Parfum Refill', 'curah', 'ml',    3000, 1800),
+  ('Sauvage',       'Parfum Refill', 'curah', 'ml',    3500, 2100),
+  ('Wangi Sabun',   'Parfum Refill', 'curah', 'ml',    2000, 1200),
+  ('Vanilla',       'Parfum Refill', 'curah', 'ml',    2500, 1500),
+  ('Botol 10 ml',   'Botol Kosong',  '10 ml', 'botol', 3000, 1500),
+  ('Botol 20 ml',   'Botol Kosong',  '20 ml', 'botol', 4000, 2000),
+  ('Botol 30 ml',   'Botol Kosong',  '30 ml', 'botol', 5500, 2800),
+  ('Botol 50 ml',   'Botol Kosong',  '50 ml', 'botol', 7500, 3800),
+  ('Botol 100 ml',  'Botol Kosong',  '100 ml', 'botol', 12000, 6500);
 
 -- Setiap item katalog dijadikan produk: varian 1.000 ml (batas menipis 100 ml), botol 50 pcs (batas 10).
-INSERT INTO products (catalog_id, name, category, size, unit, price, stock, low_stock_threshold, status)
-SELECT id, name, category, size, unit, price,
+INSERT INTO products (catalog_id, name, category, size, unit, price, cost_price, stock, low_stock_threshold, status)
+SELECT id, name, category, size, unit, price, cost_price,
        CASE WHEN unit = 'ml' THEN 1000 ELSE 50 END,
        CASE WHEN unit = 'ml' THEN 100 ELSE 10 END,
        'aktif'

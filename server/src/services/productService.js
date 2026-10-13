@@ -11,6 +11,7 @@ function mapProduct(row) {
     size: row.size,
     unit: row.unit,
     price: Number(row.price),
+    costPrice: Number(row.cost_price),
     stock: row.stock,
     lowStockThreshold: row.low_stock_threshold,
     status: row.status,
@@ -29,13 +30,16 @@ export async function getProductById(id) {
   return rows[0] ? mapProduct(rows[0]) : null;
 }
 
-export async function createProduct({ name, category, size, unit, price, lowStockThreshold, catalogId }) {
+export async function createProduct({ name, category, size, unit, price, costPrice, lowStockThreshold, catalogId }) {
   if (!name?.trim() || !category?.trim() || !size?.trim()) {
     throw new AppError('Nama, kategori, dan ukuran produk wajib diisi.', 400);
   }
   assertBottleSize(category.trim(), size.trim());
   if (!(price > 0)) {
     throw new AppError('Harga produk harus lebih dari nol.', 400);
+  }
+  if (!(Number(costPrice ?? 0) >= 0)) {
+    throw new AppError('Harga modal tidak boleh negatif.', 400);
   }
   if (lowStockThreshold != null && lowStockThreshold < 0) {
     throw new AppError('Batas stok menipis tidak boleh negatif.', 400);
@@ -46,8 +50,8 @@ export async function createProduct({ name, category, size, unit, price, lowStoc
   }
 
   const [result] = await pool.query(
-    'INSERT INTO products (catalog_id, name, category, size, unit, price, stock, low_stock_threshold, status) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)',
-    [catalogId ?? null, name.trim(), category.trim(), size.trim(), productUnit, price, lowStockThreshold ?? 5, 'aktif'],
+    'INSERT INTO products (catalog_id, name, category, size, unit, price, cost_price, stock, low_stock_threshold, status) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)',
+    [catalogId ?? null, name.trim(), category.trim(), size.trim(), productUnit, price, Number(costPrice ?? 0), lowStockThreshold ?? 5, 'aktif'],
   );
 
   return getProductById(result.insertId);
@@ -65,6 +69,7 @@ export async function updateProduct(id, updates) {
     size: updates.size?.trim() || existing.size,
     unit: updates.unit ?? existing.unit,
     price: updates.price != null ? updates.price : existing.price,
+    costPrice: updates.costPrice != null ? Number(updates.costPrice) : existing.costPrice,
     lowStockThreshold: updates.lowStockThreshold != null ? updates.lowStockThreshold : existing.lowStockThreshold,
     status: updates.status ?? existing.status,
   };
@@ -72,6 +77,9 @@ export async function updateProduct(id, updates) {
   assertBottleSize(next.category, next.size);
   if (!(next.price > 0)) {
     throw new AppError('Harga produk harus lebih dari nol.', 400);
+  }
+  if (!(next.costPrice >= 0)) {
+    throw new AppError('Harga modal tidak boleh negatif.', 400);
   }
   if (next.lowStockThreshold < 0) {
     throw new AppError('Batas stok menipis tidak boleh negatif.', 400);
@@ -84,8 +92,8 @@ export async function updateProduct(id, updates) {
   }
 
   await pool.query(
-    'UPDATE products SET name = ?, category = ?, size = ?, unit = ?, price = ?, low_stock_threshold = ?, status = ? WHERE id = ?',
-    [next.name, next.category, next.size, next.unit, next.price, next.lowStockThreshold, next.status, id],
+    'UPDATE products SET name = ?, category = ?, size = ?, unit = ?, price = ?, cost_price = ?, low_stock_threshold = ?, status = ? WHERE id = ?',
+    [next.name, next.category, next.size, next.unit, next.price, next.costPrice, next.lowStockThreshold, next.status, id],
   );
 
   return getProductById(id);

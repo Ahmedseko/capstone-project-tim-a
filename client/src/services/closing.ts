@@ -7,6 +7,8 @@ export function getTodayClosing() {
 
 export interface CloseDayInput {
   items: { productId: number; actualStock: number; note?: string }[];
+  openingCash: number;
+  cashActual: number;
 }
 
 export function closeDay(input: CloseDayInput) {

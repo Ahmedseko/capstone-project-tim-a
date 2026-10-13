@@ -18,6 +18,8 @@ export default function ClosingHarian() {
   const [loading, setLoading] = useState(true);
   const [actuals, setActuals] = useState<Record<number, number>>({});
   const [notes, setNotes] = useState<Record<number, string>>({});
+  const [openingCash, setOpeningCash] = useState(0);
+  const [cashCounted, setCashCounted] = useState<number | null>(null); // null = belum diubah, ikut uang seharusnya
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +41,10 @@ export default function ClosingHarian() {
 
   const isClosed = closing?.status === 'ditutup';
 
+  const cashExpected = isClosed ? (closing?.cashExpected ?? 0) : openingCash + (closing?.totalCash ?? 0);
+  const cashActual = isClosed ? (closing?.cashActual ?? null) : (cashCounted ?? cashExpected);
+  const cashDiff = cashActual == null ? null : cashActual - cashExpected;
+
   async function handleClose() {
     if (!closing) return;
     setSaving(true);
@@ -50,6 +56,8 @@ export default function ClosingHarian() {
           actualStock: actuals[item.productId] ?? item.systemStock,
           note: notes[item.productId]?.trim() || undefined,
         })),
+        openingCash,
+        cashActual: cashActual ?? cashExpected,
       });
       setClosing(result);
       showToast('Closing harian berhasil dilakukan.');
@@ -91,6 +99,74 @@ export default function ClosingHarian() {
         <StatCard label="Total Transaksi" value={`${closing.totalTransactions}`} icon={ListChecks} />
         <StatCard label="Jumlah Selisih Stok" value={`${totalDifference}`} icon={ClipboardCheck} tone={totalDifference > 0 ? 'warning' : 'accent'} />
       </div>
+
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle>Rekonsiliasi Kas</CardTitle>
+        </CardHeader>
+        <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-2 text-sm">
+            <div className="text-xs font-medium text-text-faint uppercase tracking-wide mb-1">Penjualan per metode bayar</div>
+            {[
+              ['Tunai', closing.totalCash],
+              ['QRIS', closing.totalQris],
+              ['Transfer', closing.totalTransfer],
+            ].map(([label, value]) => (
+              <div key={label as string} className="flex justify-between">
+                <span className="text-text-muted">{label}</span>
+                <span className="font-mono tnum text-text">{formatCurrency(value as number)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between border-t border-border pt-2">
+              <span className="text-text-muted">Total</span>
+              <span className="font-mono tnum font-semibold text-text">{formatCurrency(closing.totalRevenue)}</span>
+            </div>
+            <p className="text-[11px] text-text-faint">QRIS dan transfer masuk ke rekening, bukan ke laci kas.</p>
+          </div>
+
+          <div className="space-y-3 text-sm">
+            <div className="text-xs font-medium text-text-faint uppercase tracking-wide">Uang tunai di laci</div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-text-muted">Modal awal laci</span>
+              {isClosed ? (
+                <span className="font-mono tnum text-text">{formatCurrency(closing.openingCash)}</span>
+              ) : (
+                <Input type="number" min={0} className="w-36 h-8 text-right" value={openingCash || ''} placeholder="0"
+                  onChange={(e) => setOpeningCash(Math.max(0, Number(e.target.value)))} />
+              )}
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-muted">+ Penjualan tunai</span>
+              <span className="font-mono tnum text-text">{formatCurrency(closing.totalCash)}</span>
+            </div>
+            <div className="flex justify-between border-t border-border pt-2">
+              <span className="text-text-muted">Uang seharusnya</span>
+              <span className="font-mono tnum font-semibold text-text">{formatCurrency(cashExpected)}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-text-muted">Uang hasil hitung</span>
+              {isClosed ? (
+                <span className="font-mono tnum text-text">{cashActual == null ? '-' : formatCurrency(cashActual)}</span>
+              ) : (
+                <Input type="number" min={0} className="w-36 h-8 text-right" value={cashActual ?? ''}
+                  onChange={(e) => setCashCounted(Math.max(0, Number(e.target.value)))} />
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-text-muted">Selisih kas</span>
+              {cashDiff == null ? (
+                <span className="text-text-faint">-</span>
+              ) : cashDiff === 0 ? (
+                <Badge tone="success">Sesuai</Badge>
+              ) : (
+                <Badge tone="warning">
+                  {cashDiff > 0 ? '+' : '-'} {formatCurrency(Math.abs(cashDiff))} {cashDiff > 0 ? 'lebih' : 'kurang'}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
 
       <Card className="overflow-hidden">
         <CardHeader>

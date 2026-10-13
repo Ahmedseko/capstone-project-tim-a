@@ -2,7 +2,9 @@ import * as productService from '../services/productService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const list = asyncHandler(async (req, res) => {
-  res.json(await productService.listProducts());
+  const products = await productService.listProducts();
+  // harga modal hanya untuk admin
+  res.json(req.user.role === 'admin' ? products : products.map(({ costPrice, ...rest }) => rest));
 });
 
 export const create = asyncHandler(async (req, res) => {

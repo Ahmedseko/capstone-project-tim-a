@@ -15,11 +15,12 @@ function mapItem(row) {
     size: row.size,
     unit: row.unit,
     price: Number(row.price),
+    costPrice: Number(row.cost_price),
     linkedCount: Number(row.linked_count),
   };
 }
 
-function validate({ name, category, size, unit, price }) {
+function validate({ name, category, size, unit, price, costPrice }) {
   if (!name?.trim() || !category?.trim() || !size?.trim()) {
     throw new AppError('Nama, kategori, dan ukuran wajib diisi.', 400);
   }
@@ -29,6 +30,9 @@ function validate({ name, category, size, unit, price }) {
   }
   if (!(Number(price) > 0)) {
     throw new AppError('Harga harus lebih dari nol.', 400);
+  }
+  if (!(Number(costPrice ?? 0) >= 0)) {
+    throw new AppError('Harga modal tidak boleh negatif.', 400);
   }
 }
 
@@ -51,8 +55,8 @@ export async function createCatalogItem(input) {
   validate(input);
   try {
     const [result] = await pool.query(
-      'INSERT INTO price_catalog (name, category, size, unit, price) VALUES (?, ?, ?, ?, ?)',
-      [input.name.trim(), input.category.trim(), input.size.trim(), input.unit, Number(input.price)],
+      'INSERT INTO price_catalog (name, category, size, unit, price, cost_price) VALUES (?, ?, ?, ?, ?, ?)',
+      [input.name.trim(), input.category.trim(), input.size.trim(), input.unit, Number(input.price), Number(input.costPrice ?? 0)],
     );
     return getItem(result.insertId);
   } catch (err) {
@@ -73,11 +77,14 @@ export async function updateCatalogItem(id, input) {
   try {
     await conn.beginTransaction();
     await conn.query(
-      'UPDATE price_catalog SET name = ?, category = ?, size = ?, unit = ?, price = ? WHERE id = ?',
-      [next.name.trim(), next.category.trim(), next.size.trim(), next.unit, Number(next.price), id],
+      'UPDATE price_catalog SET name = ?, category = ?, size = ?, unit = ?, price = ?, cost_price = ? WHERE id = ?',
+      [next.name.trim(), next.category.trim(), next.size.trim(), next.unit, Number(next.price), Number(next.costPrice ?? 0), id],
     );
     if (Number(next.price) !== existing.price) {
       await conn.query('UPDATE products SET price = ? WHERE catalog_id = ?', [Number(next.price), id]);
+    }
+    if (Number(next.costPrice ?? 0) !== existing.costPrice) {
+      await conn.query('UPDATE products SET cost_price = ? WHERE catalog_id = ?', [Number(next.costPrice ?? 0), id]);
     }
     await conn.commit();
   } catch (err) {

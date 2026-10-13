@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { ShoppingBag, Wallet, Package2, AlertTriangle, Trophy } from 'lucide-react';
+import { ShoppingBag, Wallet, Package2, AlertTriangle, Trophy, TrendingUp } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -29,9 +29,18 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-2 gap-3 ${data.profitToday == null ? 'lg:grid-cols-4' : 'lg:grid-cols-5'}`}>
         <StatCard label="Penjualan Hari Ini" value={`${data.salesToday} transaksi`} icon={ShoppingBag} />
         <StatCard label="Pendapatan Hari Ini" value={formatCurrency(data.revenueToday)} icon={Wallet} tone="success" />
+        {data.profitToday != null && (
+          <StatCard
+            label="Laba Hari Ini"
+            value={formatCurrency(data.profitToday)}
+            icon={TrendingUp}
+            tone="success"
+            hint={data.salesWithoutCostToday ? `${data.salesWithoutCostToday} transaksi belum ada modal` : undefined}
+          />
+        )}
         <StatCard label="Produk Terjual" value={`${data.itemsSoldToday} item`} icon={Package2} />
         <StatCard label="Stok Menipis" value={`${data.lowStockCount} produk`} icon={AlertTriangle} tone="warning" />
       </div>

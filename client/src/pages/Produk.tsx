@@ -23,6 +23,7 @@ const emptyForm: ProductInput = {
   size: 'curah',
   unit: 'ml',
   price: 0,
+  costPrice: 0,
   lowStockThreshold: 5,
 };
 
@@ -58,7 +59,7 @@ export default function Produk() {
   function handleNameChange(name: string) {
     const hit = catalog.find((c) => c.name.toLowerCase() === name.trim().toLowerCase());
     if (hit && !editing) {
-      setForm({ ...form, name: hit.name, category: hit.category, size: hit.size, unit: hit.unit, price: hit.price, catalogId: hit.id, lowStockThreshold: CATEGORY_DEFAULTS[hit.category]?.lowStockThreshold ?? form.lowStockThreshold });
+      setForm({ ...form, name: hit.name, category: hit.category, size: hit.size, unit: hit.unit, price: hit.price, costPrice: hit.costPrice, catalogId: hit.id, lowStockThreshold: CATEGORY_DEFAULTS[hit.category]?.lowStockThreshold ?? form.lowStockThreshold });
     } else {
       setForm({ ...form, name, catalogId: editing ? form.catalogId : null });
     }
@@ -97,6 +98,7 @@ export default function Produk() {
       size: product.size,
       unit: product.unit,
       price: product.price,
+      costPrice: product.costPrice ?? 0,
       lowStockThreshold: product.lowStockThreshold,
       catalogId: product.catalogId,
     });
@@ -179,7 +181,7 @@ export default function Produk() {
             <thead>
               <tr className="border-b border-border bg-bg/50">
                 {(isAdmin
-                  ? ['Nama Produk', 'Kategori', 'Ukuran', 'Harga', 'Stok', 'Status', '']
+                  ? ['Nama Produk', 'Kategori', 'Ukuran', 'Harga', 'Modal', 'Stok', 'Status', '']
                   : ['Nama Produk', 'Kategori', 'Ukuran', 'Harga', 'Stok', 'Status']
                 ).map((h) => (
                   <th key={h} className="text-left font-medium text-text-faint text-[11px] uppercase tracking-wide px-3.5 py-2.5">
@@ -191,7 +193,7 @@ export default function Produk() {
             <tbody className="divide-y divide-border">
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6}>
+                  <td colSpan={isAdmin ? 8 : 6}>
                     <EmptyState icon={PackageX} message="Belum ada data produk." />
                   </td>
                 </tr>
@@ -205,6 +207,11 @@ export default function Produk() {
                     {formatCurrency(p.price)}
                     <span className="text-text-faint"> /{p.unit}</span>
                   </td>
+                  {isAdmin && (
+                    <td className="px-3.5 py-2.5 font-mono tnum text-text-muted">
+                      {p.costPrice ? formatCurrency(p.costPrice) : <span className="text-text-faint">-</span>}
+                    </td>
+                  )}
                   <td className="px-3.5 py-2.5 font-mono tnum">
                     <span className={p.stock <= p.lowStockThreshold ? 'text-warning' : 'text-text'}>{p.stock}</span>{' '}
                     <span className="text-text-faint">{p.unit}</span>
@@ -308,6 +315,15 @@ export default function Produk() {
               />
             </FormField>
           </div>
+          <FormField label={`Harga Modal per ${form.unit === 'ml' ? 'ml' : 'pcs'} (Rp, opsional)`}>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Untuk menghitung laba"
+              value={form.costPrice || ''}
+              onChange={(e) => setForm({ ...form, costPrice: Math.max(0, Number(e.target.value)) })}
+            />
+          </FormField>
           <FormField label={`Batas Stok Menipis (${form.unit === 'ml' ? 'ml' : 'pcs'})`}>
             <Input
               type="number"

@@ -14,7 +14,7 @@ function resolveRange(query) {
 }
 
 export const summary = asyncHandler(async (req, res) => {
-  res.json(await reportService.getDashboardSummary());
+  res.json(await reportService.getDashboardSummary({ isAdmin: req.user.role === 'admin' }));
 });
 
 export const sales = asyncHandler(async (req, res) => {

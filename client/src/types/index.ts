@@ -18,6 +18,7 @@ export interface CatalogItem {
   size: string;
   unit: ProductUnit;
   price: number;
+  costPrice: number;
   linkedCount: number;
 }
 
@@ -29,6 +30,7 @@ export interface Product {
   size: string;
   unit: ProductUnit;
   price: number;
+  costPrice?: number; // hanya dikirim untuk admin
   stock: number;
   lowStockThreshold: number;
   status: ProductStatus;
@@ -80,6 +82,8 @@ export interface Sale {
   cancelReason: string | null;
   cancelledAt: string | null;
   cancelledBy: string | null;
+  costTotal?: number | null; // hanya admin
+  profit?: number | null; // null = modal belum lengkap
   userName: string;
   createdAt: string;
 }
@@ -111,6 +115,13 @@ export interface DailyClosing {
   totalTransactions: number;
   totalItemsSold: number;
   totalRevenue: number;
+  totalCash: number;
+  totalQris: number;
+  totalTransfer: number;
+  openingCash: number;
+  cashExpected: number;
+  cashActual: number | null;
+  cashDifference: number | null;
   status: ClosingStatus;
   note: string | null;
   closedBy: string | null;
@@ -131,6 +142,8 @@ export interface DashboardSummary {
   salesToday: number;
   revenueToday: number;
   itemsSoldToday: number;
+  profitToday: number | null; // null untuk staff
+  salesWithoutCostToday: number | null;
   lowStockCount: number;
   salesTrend: { date: string; revenue: number }[];
   bestSellers: { productName: string; unit: ProductUnit; quantity: number }[];
@@ -142,6 +155,8 @@ export interface ReportSummary {
   totalTransactions: number;
   totalRevenue: number;
   totalItemsSold: number;
+  grossProfit: number;
+  salesWithoutCost: number;
   bestSellers: { productName: string; unit: ProductUnit; quantity: number; revenue: number }[];
   salesTrend: { date: string; revenue: number }[];
   sales: Sale[];

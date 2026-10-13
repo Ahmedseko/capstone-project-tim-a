@@ -7,6 +7,7 @@ export interface ProductInput {
   size: string;
   unit: ProductUnit;
   price: number;
+  costPrice: number;
   lowStockThreshold: number;
   catalogId?: number | null;
 }

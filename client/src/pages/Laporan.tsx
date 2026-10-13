@@ -8,7 +8,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-import { Download, Printer, Receipt, Wallet, Package2 } from 'lucide-react';
+import { Download, Printer, Receipt, Wallet, Package2, TrendingUp } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select, Input } from '../components/ui/Input';
@@ -121,13 +121,23 @@ export default function Laporan() {
               <span>
                 Produk Terjual: <strong>{data.totalItemsSold} item</strong>
               </span>
+              <span>
+                Laba Kotor: <strong>{formatCurrency(data.grossProfit)}</strong>
+              </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 print:hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
             <StatCard label="Total Transaksi" value={`${data.totalTransactions}`} icon={Receipt} />
             <StatCard label="Total Pendapatan" value={formatCurrency(data.totalRevenue)} icon={Wallet} tone="success" />
             <StatCard label="Produk Terjual" value={`${data.totalItemsSold} item`} icon={Package2} />
+            <StatCard
+              label="Laba Kotor"
+              value={formatCurrency(data.grossProfit)}
+              icon={TrendingUp}
+              tone="success"
+              hint={data.salesWithoutCost > 0 ? `${data.salesWithoutCost} transaksi belum ada modal, tidak dihitung` : undefined}
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print:hidden">
@@ -201,7 +211,7 @@ export default function Laporan() {
               <table className="w-full text-sm print:text-black">
                 <thead>
                   <tr className="border-b border-border bg-bg/50 print:border-gray-300 print:bg-transparent">
-                    {['Tanggal', 'No. Transaksi', 'Produk', 'Total', 'Metode'].map((h) => (
+                    {['Tanggal', 'No. Transaksi', 'Produk', 'Total', 'Laba', 'Metode'].map((h) => (
                       <th
                         key={h}
                         className="text-left font-medium text-text-faint text-[11px] uppercase tracking-wide px-3.5 py-2.5 print:text-black print:px-2 print:py-1.5"
@@ -214,7 +224,7 @@ export default function Laporan() {
                 <tbody className="divide-y divide-border print:divide-gray-200">
                   {data.sales.length === 0 && (
                     <tr>
-                      <td colSpan={5}>
+                      <td colSpan={6}>
                         <EmptyState message="Belum ada laporan pada periode ini." />
                       </td>
                     </tr>
@@ -228,6 +238,9 @@ export default function Laporan() {
                       </td>
                       <td className="px-3.5 py-2.5 font-mono tnum text-text print:text-black print:px-2 print:py-1.5">
                         {formatCurrency(s.total)}
+                      </td>
+                      <td className="px-3.5 py-2.5 font-mono tnum text-success print:text-black print:px-2 print:py-1.5">
+                        {s.profit == null ? <span className="text-text-faint">-</span> : formatCurrency(s.profit)}
                       </td>
                       <td className="px-3.5 py-2.5 text-text-muted capitalize print:text-black print:px-2 print:py-1.5">
                         {s.paymentMethod}

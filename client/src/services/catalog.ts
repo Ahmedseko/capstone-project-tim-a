@@ -7,6 +7,7 @@ export interface CatalogInput {
   size: string;
   unit: ProductUnit;
   price: number;
+  costPrice: number;
 }
 
 export function listCatalog() {

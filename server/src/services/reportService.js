@@ -34,7 +34,18 @@ async function getBestSellers(from, to, limit = 5) {
   }));
 }
 
-export async function getDashboardSummary() {
+// Laba kotor = total bayar (setelah diskon) - modal. Transaksi yang modalnya belum lengkap tidak dihitung, hanya dihitung jumlahnya.
+function summarizeProfit(sales) {
+  let grossProfit = 0;
+  let salesWithoutCost = 0;
+  for (const s of sales) {
+    if (s.profit == null) salesWithoutCost += 1;
+    else grossProfit += s.profit;
+  }
+  return { grossProfit, salesWithoutCost };
+}
+
+export async function getDashboardSummary({ isAdmin = false } = {}) {
   const today = todayIso();
   const monthStart = monthStartIso();
 
@@ -57,11 +68,15 @@ export async function getDashboardSummary() {
   const salesTrend = await getTrend(monthStart, today);
   const bestSellers = await getBestSellers(monthStart, today);
   const recentSales = (await listSales()).slice(0, 10);
+  // laba hari ini: hanya admin yang boleh melihat angka modal
+  const profitToday = isAdmin ? summarizeProfit(await listSales({ from: today, to: today, includeCost: true })) : null;
 
   return {
     salesToday: todayTotals.sales_today,
     revenueToday: Number(todayTotals.revenue_today),
     itemsSoldToday: Number(itemsToday.items_sold_today),
+    profitToday: profitToday?.grossProfit ?? null,
+    salesWithoutCostToday: profitToday?.salesWithoutCost ?? null,
     lowStockCount: lowStock.low_stock_count,
     salesTrend,
     bestSellers,
@@ -97,12 +112,15 @@ export async function getSalesReport({ from, to }) {
 
   const bestSellers = await getBestSellers(range.from, range.to);
   const salesTrend = await getTrend(range.from, range.to);
-  const sales = await listSales(range);
+  const sales = await listSales({ ...range, includeCost: true }); // route laporan khusus admin
+  const { grossProfit, salesWithoutCost } = summarizeProfit(sales);
 
   return {
     totalTransactions: totals.total_transactions,
     totalRevenue: Number(totals.total_revenue),
     totalItemsSold: Number(itemTotals.total_items_sold),
+    grossProfit,
+    salesWithoutCost,
     bestSellers,
     salesTrend,
     sales,

@@ -14,10 +14,30 @@ async function getTodaySalesTotals(conn, date) {
      WHERE s.status = 'selesai' AND s.date = ?`,
     [date],
   );
+  const [byMethod] = await conn.query(
+    `SELECT payment_method, COALESCE(SUM(total), 0) AS total FROM sales
+     WHERE status = 'selesai' AND date = ? GROUP BY payment_method`,
+    [date],
+  );
+  const paid = Object.fromEntries(byMethod.map((r) => [r.payment_method, Number(r.total)]));
   return {
     totalTransactions: totals.total_transactions,
     totalRevenue: Number(totals.total_revenue),
     totalItemsSold: Number(itemTotals.total_items_sold),
+    totalCash: paid.tunai ?? 0,
+    totalQris: paid.qris ?? 0,
+    totalTransfer: paid.transfer ?? 0,
+  };
+}
+
+// Uang tunai seharusnya di laci = modal awal laci + penjualan tunai hari itu.
+function cashFields({ openingCash, totalCash, cashActual }) {
+  const expected = openingCash + totalCash;
+  return {
+    openingCash,
+    cashExpected: expected,
+    cashActual,
+    cashDifference: cashActual == null ? null : cashActual - expected,
   };
 }
 
@@ -74,6 +94,14 @@ export async function getTodayClosing() {
       totalTransactions: existing.total_transactions,
       totalItemsSold: existing.total_items_sold,
       totalRevenue: Number(existing.total_revenue),
+      totalCash: Number(existing.total_cash),
+      totalQris: Number(existing.total_qris),
+      totalTransfer: Number(existing.total_transfer),
+      ...cashFields({
+        openingCash: Number(existing.opening_cash),
+        totalCash: Number(existing.total_cash),
+        cashActual: existing.cash_actual == null ? null : Number(existing.cash_actual),
+      }),
       status: existing.status,
       note: existing.note,
       closedBy: existing.closed_by,
@@ -102,6 +130,10 @@ export async function getTodayClosing() {
     totalTransactions: totals.totalTransactions,
     totalItemsSold: totals.totalItemsSold,
     totalRevenue: totals.totalRevenue,
+    totalCash: totals.totalCash,
+    totalQris: totals.totalQris,
+    totalTransfer: totals.totalTransfer,
+    ...cashFields({ openingCash: 0, totalCash: totals.totalCash, cashActual: null }),
     status: 'terbuka',
     note: null,
     closedBy: null,
@@ -116,11 +148,17 @@ export async function getTodayClosing() {
   };
 }
 
-export async function closeDay({ items, userId }) {
+export async function closeDay({ items, userId, openingCash, cashActual }) {
   const date = todayIso();
 
   if (!Array.isArray(items) || items.length === 0) {
     throw new AppError('Data rekonsiliasi stok tidak boleh kosong.', 400);
+  }
+
+  const opening = Number(openingCash ?? 0);
+  const actualCash = cashActual == null || cashActual === '' ? null : Number(cashActual);
+  if (!(opening >= 0) || (actualCash != null && !(actualCash >= 0))) {
+    throw new AppError('Nominal uang di laci tidak valid.', 400);
   }
 
   const conn = await pool.getConnection();
@@ -140,11 +178,18 @@ export async function closeDay({ items, userId }) {
     const lineByProduct = new Map(lines.map((l) => [l.productId, l]));
 
     const [closingResult] = await conn.query(
-      `INSERT INTO daily_closings (closing_date, total_transactions, total_items_sold, total_revenue, status, closed_by)
-       VALUES (?, ?, ?, ?, 'ditutup', ?)
+      `INSERT INTO daily_closings (closing_date, total_transactions, total_items_sold, total_revenue,
+         total_cash, total_qris, total_transfer, opening_cash, cash_actual, cash_difference, status, closed_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ditutup', ?)
        ON DUPLICATE KEY UPDATE total_transactions = VALUES(total_transactions), total_items_sold = VALUES(total_items_sold),
-         total_revenue = VALUES(total_revenue), status = 'ditutup', closed_by = VALUES(closed_by)`,
-      [date, totals.totalTransactions, totals.totalItemsSold, totals.totalRevenue, userId],
+         total_revenue = VALUES(total_revenue), total_cash = VALUES(total_cash), total_qris = VALUES(total_qris),
+         total_transfer = VALUES(total_transfer), opening_cash = VALUES(opening_cash), cash_actual = VALUES(cash_actual),
+         cash_difference = VALUES(cash_difference), status = 'ditutup', closed_by = VALUES(closed_by)`,
+      [
+        date, totals.totalTransactions, totals.totalItemsSold, totals.totalRevenue,
+        totals.totalCash, totals.totalQris, totals.totalTransfer, opening, actualCash,
+        actualCash == null ? null : actualCash - (opening + totals.totalCash), userId,
+      ],
     );
 
     const [closingRows] = await conn.query('SELECT id FROM daily_closings WHERE closing_date = ?', [date]);

@@ -10,7 +10,7 @@ const SELECT_SALES = `
   LEFT JOIN users cu ON cu.id = s.cancelled_by
 `;
 
-async function attachItems(sales) {
+async function attachItems(sales, { includeCost = false } = {}) {
   if (sales.length === 0) return [];
   const ids = sales.map((s) => s.id);
   const [items] = await pool.query(
@@ -34,6 +34,7 @@ async function attachItems(sales) {
       quantity: item.quantity,
       unitPrice: Number(item.unit_price),
       subtotal: Number(item.subtotal),
+      costPrice: item.cost_price == null ? null : Number(item.cost_price),
     });
     itemsBySale.set(item.sale_id, list);
   }
@@ -42,6 +43,10 @@ async function attachItems(sales) {
     const total = Number(s.total);
     const discount = Number(s.discount);
     const amountPaid = s.amount_paid == null ? null : Number(s.amount_paid);
+    const saleItems = itemsBySale.get(s.id) ?? [];
+    // Modal hanya bisa dihitung kalau semua item punya modal tercatat; selain itu laba = null (belum diketahui).
+    const costKnown = saleItems.length > 0 && saleItems.every((i) => i.costPrice != null);
+    const costTotal = costKnown ? saleItems.reduce((sum, i) => sum + i.costPrice * i.quantity, 0) : null;
     return {
       id: s.id,
       transactionNumber: s.transaction_number,
@@ -59,19 +64,20 @@ async function attachItems(sales) {
       cancelledBy: s.cancelled_by_name,
       userName: s.user_name,
       createdAt: s.created_at,
-      items: itemsBySale.get(s.id) ?? [],
+      items: saleItems.map(({ costPrice, ...item }) => item), // modal per item tidak dikirim ke klien
+      ...(includeCost ? { costTotal, profit: costTotal == null ? null : total - costTotal } : {}),
     };
   });
 }
 
-async function getSale(id) {
+async function getSale(id, opts) {
   const [rows] = await pool.query(`${SELECT_SALES} WHERE s.id = ?`, [id]);
-  const [sale] = await attachItems(rows);
+  const [sale] = await attachItems(rows, opts);
   return sale ?? null;
 }
 
 // Transaksi batal tidak ikut laporan; hanya halaman Penjualan yang memintanya (includeCancelled).
-export async function listSales({ from, to, includeCancelled = false } = {}) {
+export async function listSales({ from, to, includeCancelled = false, includeCost = false } = {}) {
   const where = [];
   const params = [];
   if (!includeCancelled) where.push("s.status = 'selesai'");
@@ -82,7 +88,7 @@ export async function listSales({ from, to, includeCancelled = false } = {}) {
   const query = `${SELECT_SALES} ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY s.created_at DESC`;
 
   const [rows] = await pool.query(query, params);
-  return attachItems(rows);
+  return attachItems(rows, { includeCost });
 }
 
 function computeDiscount(subtotal, discountType, discountValue) {
@@ -115,6 +121,7 @@ export async function createSale({
   discountValue,
   customerNote,
   amountPaid,
+  includeCost = false,
 }) {
   if (!Array.isArray(items) || items.length === 0) {
     throw new AppError('Minimal satu produk harus ditambahkan ke transaksi.', 400);
@@ -162,7 +169,14 @@ export async function createSale({
 
       const lineSubtotal = quantity * Number(product.price);
       subtotal += lineSubtotal;
-      resolvedItems.push({ product, quantity, unitPrice: Number(product.price), subtotal: lineSubtotal });
+      resolvedItems.push({
+        product,
+        quantity,
+        unitPrice: Number(product.price),
+        // salinan modal saat transaksi; 0 berarti belum diisi admin -> NULL
+        costPrice: Number(product.cost_price) > 0 ? Number(product.cost_price) : null,
+        subtotal: lineSubtotal,
+      });
     }
 
     const discount = computeDiscount(subtotal, discountType, discountValue);
@@ -188,8 +202,8 @@ export async function createSale({
 
     for (const item of resolvedItems) {
       await conn.query(
-        'INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)',
-        [saleId, item.product.id, item.quantity, item.unitPrice, item.subtotal],
+        'INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, cost_price, subtotal) VALUES (?, ?, ?, ?, ?, ?)',
+        [saleId, item.product.id, item.quantity, item.unitPrice, item.costPrice, item.subtotal],
       );
 
       const stockBefore = item.product.stock;
@@ -202,7 +216,7 @@ export async function createSale({
     }
 
     await conn.commit();
-    return getSale(saleId);
+    return getSale(saleId, { includeCost });
   } catch (err) {
     await conn.rollback();
     throw err;
@@ -213,7 +227,7 @@ export async function createSale({
 
 // Batalkan transaksi: stok dikembalikan lewat movement 'penjualan' bernilai positif
 // (closing menghitung terjual = -jumlah movement, jadi pembatalan otomatis menetralkan penjualannya).
-export async function cancelSale({ id, reason, userId }) {
+export async function cancelSale({ id, reason, userId, includeCost = false }) {
   const cleanReason = reason?.toString().trim().slice(0, 255);
   if (!cleanReason) {
     throw new AppError('Alasan pembatalan wajib diisi.', 400);
@@ -258,7 +272,7 @@ export async function cancelSale({ id, reason, userId }) {
     );
 
     await conn.commit();
-    return getSale(id);
+    return getSale(id, { includeCost });
   } catch (err) {
     await conn.rollback();
     throw err;

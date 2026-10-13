@@ -7,6 +7,7 @@ interface Props {
   value: string;
   icon: LucideIcon;
   tone?: 'accent' | 'success' | 'warning';
+  hint?: string;
 }
 
 const toneClasses = {
@@ -15,7 +16,7 @@ const toneClasses = {
   warning: 'bg-warning/10 text-warning',
 };
 
-export function StatCard({ label, value, icon: Icon, tone = 'accent' }: Props) {
+export function StatCard({ label, value, icon: Icon, tone = 'accent', hint }: Props) {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-3">
@@ -25,6 +26,7 @@ export function StatCard({ label, value, icon: Icon, tone = 'accent' }: Props) {
         </div>
       </div>
       <div className="text-xl font-semibold text-text tnum font-mono">{value}</div>
+      {hint && <div className="text-[11px] text-text-faint mt-1">{hint}</div>}
     </Card>
   );
 }
