@@ -60,13 +60,13 @@ Semua perintah di panduan ini dijalankan di dalam terminal.
 Buka terminal, lalu jalankan:
 
 ```bash
-git clone https://github.com/Ahmedseko/global-parfum-kutoarjo.git
-cd global-parfum-kutoarjo
+git clone https://github.com/Ahmedseko/capstone-project-tim-a.git
+cd capstone-project-tim-a
 ```
 
-> Tidak terbiasa pakai Git? Alternatif: buka halaman [github.com/Ahmedseko/global-parfum-kutoarjo](https://github.com/Ahmedseko/global-parfum-kutoarjo), klik tombol hijau **"Code" → "Download ZIP"**, lalu ekstrak filenya. Setelah itu buka terminal di dalam folder hasil ekstrak tadi (lihat Langkah 1).
+> Tidak terbiasa pakai Git? Alternatif: buka halaman [github.com/Ahmedseko/capstone-project-tim-a](https://github.com/Ahmedseko/capstone-project-tim-a), klik tombol hijau **"Code" → "Download ZIP"**, lalu ekstrak filenya. Setelah itu buka terminal di dalam folder hasil ekstrak tadi (lihat Langkah 1).
 
-Pastikan sekarang posisi terminal kamu ada **di dalam folder `global-parfum-kutoarjo`** sebelum lanjut ke langkah berikutnya. Kamu bisa cek dengan mengetik `ls` (Mac) atau `dir` (Windows) — harusnya terlihat folder `client`, `server`, `database`, dan file `README.md` ini.
+Pastikan sekarang posisi terminal kamu ada **di dalam folder `capstone-project-tim-a`** sebelum lanjut ke langkah berikutnya. Kamu bisa cek dengan mengetik `ls` (Mac) atau `dir` (Windows) — harusnya terlihat folder `client`, `server`, `database`, dan file `README.md` ini.
 
 ### Langkah 3 — Nyalakan Docker Desktop
 
@@ -84,7 +84,7 @@ Kalau muncul tabel (walau kosong) tanpa pesan error, berarti Docker sudah siap. 
 
 ### Langkah 4 — Nyalakan Database
 
-Masih di terminal yang sama, di dalam folder `global-parfum-kutoarjo`, jalankan:
+Masih di terminal yang sama, di dalam folder `capstone-project-tim-a`, jalankan:
 
 ```bash
 docker compose up -d
@@ -130,7 +130,7 @@ Server berjalan di http://localhost:4000
 Server butuh tetap menyala, jadi kita perlu **terminal baru** untuk langkah ini:
 
 - Kalau pakai VS Code: klik tombol **`+`** di panel terminal untuk membuka tab terminal baru.
-- Kalau pakai terminal biasa: buka jendela terminal baru, lalu `cd` lagi ke folder proyek (`cd global-parfum-kutoarjo`).
+- Kalau pakai terminal biasa: buka jendela terminal baru, lalu `cd` lagi ke folder proyek (`cd capstone-project-tim-a`).
 
 Di terminal baru ini, jalankan:
 
