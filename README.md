@@ -8,7 +8,9 @@ Sistem Informasi Manajemen Penjualan dan Stok UMKM Parfum — aplikasi web untuk
 - **Katalog Harga** (admin): daftar harga eceran acuan. Saat menambah produk, cukup ketik namanya dan harga terisi otomatis. Mengubah harga katalog ikut mengubah produk terkait; transaksi lama tidak berubah.
 - **Stok** dalam ml (varian) dan pcs (botol & produk lain), lengkap dengan riwayat pergerakan stok.
 - **Penjualan**: diskon (Rp/%), catatan pembeli, uang diterima + kembalian, **struk** yang bisa dicetak ke printer apa pun atau disimpan sebagai PDF, dan **pembatalan transaksi** oleh admin (stok dikembalikan, keluar dari laporan).
-- **Closing harian**, **laporan** (dashboard, grafik, ekspor Excel), serta pengaturan toko dan pengguna.
+- **Harga modal & laba** (admin): modal per ml / per botol diisi di Katalog atau Produk. Modal disalin ke tiap transaksi, jadi laba lama tidak berubah saat modal berganti. Laporan dan Dashboard menampilkan laba kotor; transaksi tanpa modal dihitung terpisah, bukan dianggap untung penuh. Staff tidak melihat modal maupun laba.
+- **Closing harian** dengan **rekonsiliasi kas**: penjualan per metode bayar (tunai/QRIS/transfer), uang tunai seharusnya di laci (modal awal + penjualan tunai) dibanding hasil hitung, plus rekonsiliasi stok.
+- **Laporan** (dashboard, grafik, ekspor Excel), serta pengaturan toko dan pengguna.
 
 ## Struktur Proyek
 
@@ -189,7 +191,9 @@ Kalau sudah selesai pakai:
 2. Buka **Produk → Tambah Produk**, ketik nama dari katalog (mis. `Vanilla`): kategori, satuan, dan harga terisi otomatis.
 3. Buka **Penjualan → Racik Parfum**: pilih varian, ukuran botol, dan isi (mis. 25 ml dalam botol 30 ml) → tambah ke keranjang → isi diskon / uang diterima → **Simpan Penjualan**. Struk muncul; coba **Cetak / Simpan PDF**.
 4. Dari daftar **Transaksi Hari Ini**, klik **Detail** lalu **Batalkan Transaksi** (admin): stok kembali dan transaksi keluar dari laporan.
-5. Lanjutkan ke **Stok** (riwayat), **Closing Harian**, dan **Laporan**.
+5. Isi **harga modal** di Katalog Harga (data contoh sudah terisi), lalu lihat **Laporan** (Laba Kotor) dan **Dashboard** (Laba Hari Ini).
+6. Buka **Closing Harian**: isi modal awal laci dan uang hasil hitung, lihat selisih kas, lalu tutup hari.
+7. Lihat juga **Stok** (riwayat pergerakan stok).
 
 ## Alur Utama
 
@@ -206,11 +210,12 @@ Proyek ini dikembangkan oleh tim dengan bantuan AI (Claude, Anthropic) sebagai a
 
 ## Memperbarui Database yang Sudah Berjalan
 
-Instalasi baru otomatis memakai `database/schema.sql` terbaru. Kalau kamu **sudah punya database lama** dengan data yang ingin dipertahankan, jalankan migrasi di `database/migrations/` **berurutan, masing-masing sekali** (`001_price_catalog.sql`, lalu `002_sales_upgrade.sql`). Contoh dengan Docker:
+Instalasi baru otomatis memakai `database/schema.sql` terbaru. Kalau kamu **sudah punya database lama** dengan data yang ingin dipertahankan, jalankan migrasi di `database/migrations/` **berurutan, masing-masing sekali** (`001_price_catalog.sql`, `002_sales_upgrade.sql`, lalu `003_cash_and_cost.sql`). Contoh dengan Docker:
 
 ```bash
 docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/001_price_catalog.sql
 docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/002_sales_upgrade.sql
+docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/003_cash_and_cost.sql
 ```
 
 (Di PowerShell tanda `<` tidak didukung — gunakan Git Bash, atau `Get-Content file.sql | docker exec -i gpk-mysql mysql -uroot -proot`.)
