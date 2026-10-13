@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ShoppingBag, Wallet, Package2, AlertTriangle, Trophy } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card';
@@ -7,7 +7,7 @@ import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { getDashboardSummary } from '../services/reports';
 import type { DashboardSummary } from '../types';
-import { formatCurrency, formatCompactCurrency, formatDateTime } from '../utils/format';
+import { formatCurrency, formatCompactCurrency, formatDate, formatDateTime } from '../utils/format';
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardSummary | null>(null);
@@ -46,16 +46,11 @@ export default function Dashboard() {
               <EmptyState message="Belum ada data penjualan bulan ini." />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data.salesTrend} margin={{ top: 4, right: 8 }}>
-                  <defs>
-                    <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <BarChart data={data.salesTrend} margin={{ top: 4, right: 8 }}>
                   <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
                   <XAxis
                     dataKey="date"
+                    tickFormatter={(v: string) => formatDate(v, { year: undefined })}
                     tick={{ fontSize: 11, fill: '#52525b' }}
                     axisLine={false}
                     tickLine={false}
@@ -77,8 +72,8 @@ export default function Dashboard() {
                     labelStyle={{ color: '#9ca3af' }}
                     formatter={(value) => formatCurrency(Number(value))}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} fill="url(#revenueFill)" />
-                </AreaChart>
+                  <Bar dataKey="revenue" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>

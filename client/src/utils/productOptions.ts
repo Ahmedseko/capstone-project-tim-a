@@ -9,7 +9,7 @@ export const UNITS: { value: ProductUnit; label: string }[] = [
 ];
 
 // Pilihan kategori otomatis menyetel satuan: refill = ml, botol kosong = pcs.
-export const CATEGORY_DEFAULTS: Record<string, { unit: ProductUnit; size: string }> = {
-  'Parfum Refill': { unit: 'ml', size: 'curah' },
-  'Botol Kosong': { unit: 'botol', size: '30 ml' },
+export const CATEGORY_DEFAULTS: Record<string, { unit: ProductUnit; size: string; lowStockThreshold: number }> = {
+  'Parfum Refill': { unit: 'ml', size: 'curah', lowStockThreshold: 100 }, // stok dalam ml
+  'Botol Kosong': { unit: 'botol', size: '30 ml', lowStockThreshold: 10 },
 };

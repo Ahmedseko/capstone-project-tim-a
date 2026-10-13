@@ -14,7 +14,9 @@ export default function Login() {
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get('expired') ? 'Sesi Anda berakhir. Silakan masuk lagi.' : null,
+  );
 
   const isValid = email.trim().length > 0 && password.length > 0;
 

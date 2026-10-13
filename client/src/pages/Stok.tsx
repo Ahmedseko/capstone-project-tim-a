@@ -187,12 +187,14 @@ export default function Stok() {
               )}
               {movements.map((m) => {
                 const unit = products.find((p) => p.id === m.productId)?.unit ?? '';
+                // pembatalan transaksi dicatat sebagai movement 'penjualan' bernilai positif (stok kembali)
+                const kind = m.type === 'penjualan' && m.quantity > 0 ? { label: 'Pembatalan', tone: 'warning' as const } : typeTone[m.type];
                 return (
                   <tr key={m.id} className="hover:bg-white/[0.02] transition">
                     <td className="px-3.5 py-2.5 text-text-muted">{formatDate(m.createdAt)}</td>
                     <td className="px-3.5 py-2.5 text-text">{m.productName}</td>
                     <td className="px-3.5 py-2.5">
-                      <Badge tone={typeTone[m.type].tone}>{typeTone[m.type].label}</Badge>
+                      <Badge tone={kind.tone}>{kind.label}</Badge>
                     </td>
                     <td className={'px-3.5 py-2.5 font-mono tnum ' + (m.quantity < 0 ? 'text-danger' : 'text-success')}>
                       {m.quantity > 0 ? '+' : ''}

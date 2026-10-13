@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   ResponsiveContainer,
@@ -142,15 +140,9 @@ export default function Laporan() {
                   <EmptyState message="Belum ada laporan pada periode ini." />
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.salesTrend} margin={{ top: 4, right: 8 }}>
-                      <defs>
-                        <linearGradient id="reportFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.35} />
-                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
+                    <BarChart data={data.salesTrend} margin={{ top: 4, right: 8 }}>
                       <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#52525b' }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="date" tickFormatter={(v: string) => formatDate(v, { year: undefined })} tick={{ fontSize: 11, fill: '#52525b' }} axisLine={false} tickLine={false} />
                       <YAxis
                         tick={{ fontSize: 11, fill: '#52525b' }}
                         axisLine={false}
@@ -162,8 +154,8 @@ export default function Laporan() {
                         contentStyle={{ background: '#15161a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 12 }}
                         formatter={(value) => formatCurrency(Number(value))}
                       />
-                      <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} fill="url(#reportFill)" />
-                    </AreaChart>
+                      <Bar dataKey="revenue" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                    </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>

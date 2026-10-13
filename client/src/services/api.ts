@@ -39,6 +39,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const data = await res.json().catch(() => ({}));
 
+  // Token kedaluwarsa (12 jam): bersihkan sesi dan kembali ke login, bukan "Gagal memuat" yang membingungkan.
+  if (res.status === 401 && token && !path.startsWith('/auth/login')) {
+    clearToken();
+    localStorage.removeItem('gpk_user');
+    if (window.location.pathname !== '/login') window.location.assign('/login?expired=1');
+  }
+
   if (!res.ok) {
     throw new ApiRequestError(data.message ?? 'Terjadi kesalahan pada server.', res.status);
   }

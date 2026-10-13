@@ -58,7 +58,7 @@ export default function Produk() {
   function handleNameChange(name: string) {
     const hit = catalog.find((c) => c.name.toLowerCase() === name.trim().toLowerCase());
     if (hit && !editing) {
-      setForm({ ...form, name: hit.name, category: hit.category, size: hit.size, unit: hit.unit, price: hit.price, catalogId: hit.id });
+      setForm({ ...form, name: hit.name, category: hit.category, size: hit.size, unit: hit.unit, price: hit.price, catalogId: hit.id, lowStockThreshold: CATEGORY_DEFAULTS[hit.category]?.lowStockThreshold ?? form.lowStockThreshold });
     } else {
       setForm({ ...form, name, catalogId: editing ? form.catalogId : null });
     }
@@ -308,7 +308,7 @@ export default function Produk() {
               />
             </FormField>
           </div>
-          <FormField label="Batas Stok Menipis">
+          <FormField label={`Batas Stok Menipis (${form.unit === 'ml' ? 'ml' : 'pcs'})`}>
             <Input
               type="number"
               min={0}
