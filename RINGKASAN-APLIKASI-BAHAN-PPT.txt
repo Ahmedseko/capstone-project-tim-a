@@ -1,7 +1,8 @@
 ====================================================================
 RINGKASAN LENGKAP APLIKASI — BAHAN DASAR PRESENTASI CAPSTONE
 ====================================================================
-Disusun: 21 September 2026
+Disusun         : 21 September 2026
+Diperbarui      : 14 Oktober 2026 (sesuai kondisi aplikasi saat ini)
 
 
 ====================================================================
@@ -10,6 +11,7 @@ Disusun: 21 September 2026
 
 Nama Aplikasi   : Global Parfum Kutoarjo
 Studi Kasus     : UMKM Parfum "Global Parfum Kutoarjo"
+Repositori      : https://github.com/Ahmedseko/capstone-project-tim-a
 
 Judul Capstone:
 "Perancangan dan Implementasi Sistem Informasi Manajemen Penjualan
@@ -18,9 +20,10 @@ Menggunakan Metode Prototyping"
 
 Deskripsi Singkat:
 Sistem Informasi Manajemen Penjualan dan Stok untuk UMKM Parfum —
-aplikasi web untuk mengelola data produk, stok, transaksi penjualan
-(kasir), closing harian, laporan usaha, hingga manajemen pengguna,
-secara terpusat dan real-time menggantikan pencatatan manual.
+aplikasi web untuk mengelola produk, katalog harga, stok, transaksi
+penjualan (kasir racik parfum per ml), struk, closing harian dengan
+rekonsiliasi kas dan stok, laporan usaha termasuk laba, serta manajemen
+pengguna, secara terpusat dan real-time menggantikan pencatatan manual.
 
 
 ====================================================================
@@ -32,20 +35,27 @@ Latar Belakang:
   manual (buku/spreadsheet terpisah), sehingga rawan salah hitung
   stok, sulit rekap laporan harian, dan sulit dipantau real-time
   oleh pemilik usaha.
-- Produk parfum punya dua model penjualan yang berbeda: dijual utuh
-  per botol (parfum branded/segel) dan dijual eceran per mililiter
-  (decant/refill) — pencatatan manual kesulitan membedakan dua
-  satuan ini secara konsisten.
+- Model jual toko parfum berbeda dengan toko biasa: parfum dijual
+  per mililiter (contoh: Baccarat Rp4.000 per ml) lalu dimasukkan
+  ke botol yang dipilih pembeli. Harga akhir = harga isi (ml x harga
+  per ml) + harga botol. Ukuran botol bervariasi dan harga tiap
+  ukuran botol berbeda. Pencatatan manual sulit menghitung ini dan
+  sulit melacak stok parfum (dalam ml) dan stok botol (dalam buah)
+  secara bersamaan.
+- Pemilik juga perlu tahu laba dan kecocokan uang kas di akhir hari,
+  bukan hanya omzet.
 
 Tujuan Sistem:
 1. Mendigitalkan pencatatan produk, stok, dan transaksi penjualan.
-2. Mendukung dua model satuan jual (per botol dan per ml) dalam satu
-   sistem yang sama, tanpa mengubah struktur data secara drastis.
-3. Menyediakan mekanisme rekonsiliasi stok harian (closing harian)
-   untuk mendeteksi selisih antara stok sistem dan stok fisik.
-4. Menyediakan laporan penjualan (termasuk ekspor Excel) sebagai
-   dasar pengambilan keputusan pemilik usaha.
-5. Membedakan hak akses antara pemilik/admin dan staf toko.
+2. Mendukung penjualan racik parfum per ml + botol, di samping produk
+   per buah (bibit, produk pendukung), dalam satu sistem.
+3. Menyediakan katalog harga yang diatur admin, sehingga harga
+   konsisten dan terisi otomatis saat menambah produk.
+4. Menyediakan mekanisme rekonsiliasi harian (closing): stok sistem
+   vs stok fisik, dan uang tunai seharusnya vs uang di laci.
+5. Menyediakan laporan penjualan dan laba (termasuk ekspor Excel)
+   sebagai dasar pengambilan keputusan pemilik usaha.
+6. Membedakan hak akses antara pemilik/admin dan staf toko.
 
 
 ====================================================================
@@ -55,7 +65,8 @@ Tujuan Sistem:
 Tahapan yang dilakukan:
 1. Pengumpulan Kebutuhan (Requirement Gathering)
    - Identifikasi proses bisnis toko parfum: produk, stok, penjualan,
-     closing harian, laporan.
+     closing harian, laporan. Kebutuhan baru terus muncul dari
+     masukan pemilik/tim setelah prototipe dicoba.
 2. Membangun Prototipe (Quick Design & Build)
    - Modul dibangun bertahap: mulai dari autentikasi, produk & stok,
      penjualan, closing harian, laporan, lalu manajemen pengguna.
@@ -63,24 +74,45 @@ Tahapan yang dilakukan:
    - Setiap modul diuji langsung (fungsional, alur data ke database)
      sebelum lanjut ke modul berikutnya.
 4. Perbaikan / Revisi Prototipe
-   - Contoh nyata dari riwayat pengembangan:
+   - Contoh nyata dari riwayat pengembangan (urut waktu):
      * Aksi "nonaktifkan produk" diganti jadi hapus produk yang
        sesungguhnya (delete), dengan fallback otomatis ke nonaktif
        jika produk sudah punya riwayat transaksi (agar data historis
        tidak rusak).
-     * Ditambahkan dukungan input stok untuk banyak produk sekaligus
-       dalam satu form, setelah ditemukan alur input satu-per-satu
-       kurang efisien untuk pengguna.
-     * Data dummy/contoh pada seed database dihapus, disisakan hanya
-       akun login, supaya aplikasi mulai dari kondisi bersih/nyata.
-     * Ditambahkan konsep satuan jual (botol vs ml) setelah disadari
-       kebutuhan bisnis nyata: sebagian parfum dijual eceran per ml.
+     * Ditambahkan input stok untuk banyak produk sekaligus dalam
+       satu form, setelah alur satu-per-satu dinilai kurang efisien.
+     * Data dummy pada seed dihapus agar aplikasi mulai dari kondisi
+       bersih (kemudian seed diberi data contoh yang jelas ditandai,
+       untuk memudahkan penilaian).
+     * Konsep satuan jual (botol vs ml) ditambahkan setelah disadari
+       sebagian parfum dijual eceran per ml.
+     * Masukan baru dari tim: harga per ml, harga botol berbeda tiap
+       ukuran, dan daftar varian. Model dirombak: varian parfum
+       dijual per ml (stok dalam ml), botol kosong dijual per buah,
+       dan keduanya digabung saat transaksi ("Racik Parfum").
+     * Ditambahkan Katalog Harga (admin): ketik nama produk, harga
+       terisi otomatis. Mengubah harga katalog ikut mengubah produk
+       terkait, sementara transaksi lama tidak berubah.
+     * Ukuran botol dibatasi kelipatan 5 ml (5-100 ml) berdasarkan
+       masukan, dengan validasi di tampilan dan di server.
+     * Halaman Penjualan dirombak: tampilan kasir lebih cepat
+       (kartu varian, tombol ukuran botol, isi cepat), diskon,
+       uang diterima + kembalian, struk cetak/PDF, dan pembatalan
+       transaksi.
+     * Ditambahkan harga modal dan laba, serta rekonsiliasi kas di
+       closing harian, setelah disadari omzet saja tidak cukup untuk
+       pemilik usaha.
+     * Perbaikan dari hasil uji coba: judul halaman, label pembatalan
+       di riwayat stok, logout otomatis saat sesi habis, batas stok
+       menipis yang sesuai satuan ml, dan grafik yang terbaca saat
+       data masih sedikit.
 5. Iterasi berulang hingga sistem dinyatakan siap digunakan pengguna.
 
 Kenapa Prototyping dipilih (bukan Waterfall):
 Pengembangan tidak berjalan satu alur linear dari awal sampai akhir,
 melainkan bertahap per-modul dengan revisi berdasarkan hasil uji
-coba tiap tahap — ciri khas metode Prototyping.
+coba tiap tahap. Kebutuhan toko (misalnya model harga per ml)
+baru jelas setelah prototipe dicoba — ciri khas metode Prototyping.
 
 
 ====================================================================
@@ -93,9 +125,10 @@ coba tiap tahap — ciri khas metode Prototyping.
 - Vite 8                     : build tool & dev server (hot reload cepat)
 - Tailwind CSS 4             : utility-first CSS framework untuk styling
 - React Router DOM 7         : routing / navigasi antar halaman (SPA)
-- Recharts 3                 : pembuatan grafik (tren penjualan di dashboard)
+- Recharts 3                 : pembuatan grafik (dashboard & laporan)
 - Lucide React                : kumpulan ikon UI
 - clsx, tailwind-merge        : utilitas penggabungan className kondisional
+- Font: Plus Jakarta Sans (Google Fonts)
 
 --- BACKEND (server/) ---
 - Node.js                    : runtime JavaScript sisi server
@@ -110,13 +143,20 @@ coba tiap tahap — ciri khas metode Prototyping.
 
 --- DATABASE ---
 - MySQL 8.0
-- Dijalankan via Docker container (nama: gpk-mysql), data persisten
-  lewat Docker volume — data tidak hilang walau komputer di-restart.
+- Lokal (pengembangan): Docker container (nama: gpk-mysql), data
+  persisten lewat Docker volume.
+- Produksi: MySQL 8.0 pada server VPS.
+- Perubahan struktur database untuk instalasi yang sudah berjalan
+  disediakan sebagai file migrasi bernomor (database/migrations/).
 
 --- INFRASTRUKTUR & TOOLS PENGEMBANGAN ---
-- Docker & Docker Compose     : menjalankan database MySQL secara terisolasi
+- Docker & Docker Compose     : menjalankan database MySQL lokal secara terisolasi
 - Git & GitHub                : version control & kolaborasi kode
 - npm                         : manajemen dependency/package
+- Deployment (VPS Ubuntu)     : Nginx (melayani frontend hasil build dan
+                                meneruskan /api ke backend), backend
+                                dijalankan sebagai layanan systemd,
+                                deploy lewat SSH
 
 
 ====================================================================
@@ -127,21 +167,22 @@ Pola Arsitektur : Client-Server, dengan REST API sebagai penghubung
 
     [ Browser ]
         |
-        |  React SPA (client, port 5173)
+        |  React SPA (dev: port 5173; produksi: file statis di Nginx)
         v
     [ REST API ]
         |
         |  Express.js (server, port 4000)
-        |  Endpoint: /api/auth, /api/products, /api/stock,
-        |            /api/sales, /api/closing, /api/reports,
-        |            /api/settings, /api/users
+        |  Endpoint: /api/auth, /api/products, /api/catalog,
+        |            /api/stock, /api/sales (+ /:id/cancel),
+        |            /api/closing, /api/reports,
+        |            /api/settings (+ /store), /api/users
         v
     [ Database ]
         |
-        |  MySQL 8.0 (Docker container, port 3306)
+        |  MySQL 8.0
         v
-    (users, products, stock_movements, sales, sale_items,
-     daily_closings, daily_closing_items, settings)
+    (users, price_catalog, products, stock_movements, sales,
+     sale_items, daily_closings, daily_closing_items, settings)
 
 Alur Autentikasi:
 1. User login (email + password) -> backend verifikasi ke tabel users
@@ -155,11 +196,22 @@ Alur Autentikasi:
 5. Middleware backend (requireAuth) memvalidasi token di setiap
    endpoint terproteksi; middleware requireRole('admin') membatasi
    endpoint tertentu hanya untuk admin.
+6. Jika token kedaluwarsa, aplikasi otomatis keluar ke halaman login
+   dengan pesan "Sesi Anda berakhir. Silakan masuk lagi."
 
 Struktur Folder Proyek:
-  client/     -> Frontend React + Vite + TypeScript + Tailwind
-  server/     -> Backend REST API (Node.js + Express)
-  database/   -> schema.sql (struktur tabel) & seed.sql (data awal)
+  client/              -> Frontend React + Vite + TypeScript + Tailwind
+  server/              -> Backend REST API (Node.js + Express)
+  database/            -> schema.sql (struktur tabel), seed.sql (akun
+                          login + data contoh), migrations/ (migrasi
+                          untuk database yang sudah berjalan)
+
+Alur Data Penting (contoh: satu penjualan racik parfum):
+  Kasir memilih varian + botol + isi (ml) -> keranjang -> server
+  mengunci baris produk, memeriksa stok (jumlah produk yang sama
+  digabung dulu), menghitung diskon & total, menyimpan transaksi dan
+  item (termasuk salinan harga dan modal saat itu), mengurangi stok,
+  dan mencatat pergerakan stok, semuanya dalam satu transaksi database.
 
 
 ====================================================================
@@ -171,6 +223,7 @@ Struktur Folder Proyek:
   /login          Login                Publik (belum login)
   /dashboard      Dashboard            Admin & Staff
   /produk         Manajemen Produk     Admin & Staff (edit: admin saja)
+  /katalog        Katalog Harga        Admin saja
   /stok           Manajemen Stok       Admin & Staff
   /penjualan      Penjualan (Kasir)    Admin & Staff
   /closing        Closing Harian       Admin & Staff
@@ -191,158 +244,251 @@ A. LOGIN & AUTENTIKASI
    - Login dengan email & password.
    - Opsi "Ingat saya" (sesi tetap tersimpan setelah browser ditutup).
    - Validasi akun nonaktif ditolak login.
+   - Logout otomatis dengan pesan jelas saat sesi kedaluwarsa.
 
 B. DASHBOARD
    - Ringkasan penjualan hari ini (jumlah transaksi, pendapatan,
-     item terjual).
+     item terjual). Transaksi yang dibatalkan tidak dihitung.
+   - Laba hari ini (khusus admin).
    - Jumlah produk dengan stok menipis.
-   - Grafik tren penjualan bulan berjalan (menggunakan Recharts).
-   - Daftar produk terlaris.
+   - Grafik batang penjualan bulan berjalan (Recharts).
+   - Daftar produk terlaris (diurutkan berdasarkan pendapatan).
    - Aktivitas/transaksi penjualan terbaru.
    - Daftar produk dengan stok menipis.
 
 C. MANAJEMEN PRODUK (Produk)
-   - CRUD produk: nama, kategori, ukuran (ml), SATUAN JUAL
-     (botol / ml — fitur terbaru), harga, batas stok menipis.
-   - Harga otomatis ditampilkan sesuai satuan (contoh: "Rp 2.500/ml"
-     untuk produk decant, "Rp 150.000/botol" untuk produk botolan).
-   - Filter berdasarkan kategori & status (aktif/nonaktif).
-   - Pencarian produk.
-   - Hapus produk: hapus permanen jika belum ada riwayat transaksi;
-     otomatis dinonaktifkan (bukan dihapus) jika produk sudah pernah
-     terpakai di transaksi/stok, agar laporan historis tetap valid.
+   - CRUD produk: nama, kategori, ukuran, SATUAN JUAL (botol/pcs atau
+     ml), harga, harga modal (admin), batas stok menipis.
+   - Dua jenis produk utama untuk racik parfum:
+     * Varian parfum (kategori Parfum Refill, satuan ml): harga per ml,
+       stok dalam ml.
+     * Botol kosong (kategori Botol Kosong, satuan pcs): harga tiap
+       ukuran botol, stok dalam buah. Ukuran botol dipilih dari
+       daftar kelipatan 5 ml (5-100 ml).
+   - Kategori lain (bibit parfum, produk pendukung, parfum botolan)
+     tetap dipakai sebagai pilihan.
+   - Ketik nama produk -> saran dari Katalog Harga; jika dipilih,
+     kategori, ukuran, satuan, harga, dan modal terisi otomatis.
+   - Batas stok menipis default menyesuaikan satuan (100 ml untuk
+     varian, 10 pcs untuk botol).
+   - Filter berdasarkan kategori & status; pencarian produk.
+   - Hapus produk: hapus permanen jika belum ada riwayat; otomatis
+     dinonaktifkan jika sudah pernah dipakai di transaksi/stok.
 
-D. MANAJEMEN STOK (Stok)
-   - Tabel stok saat ini per produk (dengan satuan: botol/ml).
+D. KATALOG HARGA (Admin saja)
+   - Daftar harga eceran acuan yang ditentukan admin: nama, kategori,
+     ukuran, satuan, harga, harga modal.
+   - Menampilkan jumlah produk yang terhubung ke tiap item.
+   - Mengubah harga/modal katalog ikut memperbarui produk terkait
+     (dengan konfirmasi); transaksi lama tidak berubah karena harga
+     disimpan per transaksi.
+   - Menghapus item katalog tidak menghapus produk terkait.
+
+E. MANAJEMEN STOK (Stok)
+   - Tabel stok saat ini per produk (satuan botol/pcs atau ml).
    - Tambah stok masuk untuk BANYAK produk sekaligus dalam satu form.
-   - Riwayat pergerakan stok lengkap: stok masuk, penjualan, dan
-     penyesuaian (dari closing harian), dengan stok sebelum & sesudah.
-   - Tanggal stok masuk bisa diatur mundur (backdate) untuk mencatat
-     stok yang diterima di hari sebelumnya.
+   - Riwayat pergerakan stok: stok masuk, penjualan, pembatalan,
+     dan penyesuaian (dari closing harian), dengan stok sebelum &
+     sesudah.
+   - Tanggal stok masuk bisa diatur mundur (backdate).
 
-E. PENJUALAN (Kasir / Point of Sale)
-   - Pencarian & pemilihan produk untuk dimasukkan ke keranjang.
-   - Menampilkan harga per satuan dan sisa stok saat memilih produk.
-   - Atur jumlah per item di keranjang, otomatis hitung subtotal & total.
-   - Metode pembayaran: tunai, QRIS, transfer.
+F. PENJUALAN (Kasir / Point of Sale)
+   - Tab "Racik Parfum":
+     * Pilih varian dari kartu (nama, harga per ml, stok ml) dengan
+       kolom cari.
+     * Pilih ukuran botol dari tombol (ukuran, harga, stok).
+     * Isi botol: tombol cepat Penuh / 3/4 / 1/2 / 1/4 atau input
+       manual; isi tidak boleh melebihi ukuran botol maupun sisa stok.
+     * Ringkasan hitungan langsung (contoh: 25 ml x Rp4.000 + botol
+       Rp5.500 = Rp105.500).
+   - Tab "Produk Lain": produk per buah (bibit, pendukung, dll).
+   - Keranjang: satu racikan tampil sebagai satu item; isi (ml) dan
+     jumlah botol bisa diubah langsung, dibatasi stok.
+   - Diskon (Rp atau persen) dan catatan/nama pembeli (opsional).
+   - Metode pembayaran: tunai, QRIS, transfer. Untuk tunai: uang
+     diterima, tombol nominal cepat, dan kembalian otomatis.
    - Nomor transaksi otomatis dengan format TRX-YYYYMMDD-NNN.
-   - Riwayat transaksi hari ini ditampilkan langsung di halaman.
-   - Stok berkurang otomatis begitu transaksi disimpan (transaksional,
+   - STRUK: tampil setelah simpan; dapat dicetak ke printer apa pun
+     (termasuk printer thermal 80 mm) atau disimpan sebagai PDF
+     lewat dialog cetak browser.
+   - Daftar "Transaksi Hari Ini" dengan tombol Detail (membuka struk
+     dan cetak ulang).
+   - PEMBATALAN TRANSAKSI (admin): wajib mengisi alasan; stok
+     dikembalikan, transaksi ditandai Batal dan keluar dari laporan,
+     dashboard, closing, dan ekspor Excel. Tidak bisa dibatalkan jika
+     hari tersebut sudah di-closing.
+   - Stok berkurang otomatis saat transaksi disimpan (transaksional,
      tervalidasi agar stok tidak bisa minus).
 
-F. CLOSING HARIAN
-   - Rekonsiliasi stok sistem vs stok fisik di akhir hari, per produk:
-     stok awal, stok masuk, jumlah terjual, stok sistem, stok aktual
-     (hasil hitung fisik), dan selisihnya.
-   - Jika ada selisih, sistem otomatis mencatat penyesuaian stok
-     (stock adjustment) ke riwayat pergerakan stok dan memperbarui
-     stok produk sesuai hasil hitung fisik.
+G. CLOSING HARIAN
+   - Rekonsiliasi STOK sistem vs fisik per produk: stok awal, stok
+     masuk, terjual, stok sistem, stok aktual (hasil hitung), selisih.
+     Selisih otomatis dicatat sebagai penyesuaian stok.
+   - Rekonsiliasi KAS:
+     * Penjualan hari itu dipisah per metode bayar (tunai, QRIS,
+       transfer).
+     * Uang tunai seharusnya di laci = modal awal laci + penjualan
+       tunai. Admin/staf mengisi modal awal dan uang hasil hitung;
+       sistem menampilkan selisih kas (sesuai / lebih / kurang).
+     * Hasil rekonsiliasi kas tersimpan saat hari ditutup.
    - Closing yang sudah difinalisasi terkunci (tidak bisa closing
      dua kali di tanggal yang sama).
-   - Ringkasan otomatis: total transaksi, total item terjual, total
-     pendapatan hari itu.
+   - Ringkasan otomatis: total transaksi, total item terjual (buah),
+     total pendapatan hari itu. Transaksi batal tidak dihitung.
 
-G. LAPORAN (Admin saja)
+H. LAPORAN (Admin saja)
    - Laporan penjualan dengan filter rentang tanggal.
-   - Ekspor laporan ke file Excel (.xlsx) — kolom: tanggal, nomor
-     transaksi, produk, kategori, ukuran, SATUAN, jumlah, harga,
-     subtotal, metode pembayaran.
-   - Laporan siap cetak (print-friendly).
+   - Kartu ringkasan: total transaksi, pendapatan, produk terjual,
+     LABA KOTOR.
+   - Laba kotor = total bayar (setelah diskon) dikurangi modal. Modal
+     disalin ke tiap transaksi saat terjadi, jadi laba lama tidak
+     berubah ketika modal berganti. Transaksi yang modalnya belum
+     diisi tidak dihitung labanya; jumlahnya ditampilkan terpisah.
+   - Grafik tren penjualan dan produk terlaris.
+   - Tabel transaksi dengan kolom laba per transaksi.
+   - Ekspor laporan ke Excel (.xlsx); laporan siap cetak.
 
-H. PENGATURAN & MANAJEMEN PENGGUNA (Admin saja)
-   - Pengaturan identitas toko: nama toko, nama pemilik, alamat,
-     telepon, mata uang, ambang batas stok menipis default.
+I. PENGATURAN & MANAJEMEN PENGGUNA (Admin saja)
+   - Identitas toko: nama toko, pemilik, alamat, telepon, mata uang,
+     ambang batas stok menipis default. Nama/alamat/telepon dipakai
+     pada struk.
    - Manajemen pengguna: tambah user baru, ubah role (admin/staff),
      aktifkan/nonaktifkan akun.
-   - Admin tidak bisa menonaktifkan akunnya sendiri (pencegahan
-     terkunci dari sistem sendiri).
+   - Admin tidak bisa menonaktifkan akunnya sendiri.
 
 
 ====================================================================
 8. HAK AKSES PENGGUNA (ROLE-BASED ACCESS CONTROL)
 ====================================================================
 
-  Fitur                    Admin/Owner        Staff
-  ------------------------ ------------------ -------------------
-  Dashboard                 Ya                 Ya
-  Lihat Produk               Ya                 Ya
-  Tambah/Edit/Hapus Produk   Ya                 Tidak
-  Lihat & Tambah Stok        Ya                 Ya
-  Penjualan (Kasir)          Ya                 Ya
-  Closing Harian             Ya                 Ya
-  Laporan                    Ya                 Tidak
-  Ekspor Laporan Excel       Ya                 Tidak
-  Pengaturan Toko            Ya                 Tidak
-  Manajemen Pengguna         Ya                 Tidak
+  Fitur                         Admin/Owner        Staff
+  ----------------------------- ------------------ -------------------
+  Dashboard                      Ya                 Ya (tanpa laba)
+  Lihat Produk                   Ya                 Ya (tanpa modal)
+  Tambah/Edit/Hapus Produk       Ya                 Tidak
+  Katalog Harga                  Ya                 Tidak
+  Lihat & Tambah Stok            Ya                 Ya
+  Penjualan (Kasir) & Struk      Ya                 Ya
+  Batalkan Transaksi             Ya                 Tidak
+  Closing Harian                 Ya                 Ya
+  Laporan (termasuk laba)        Ya                 Tidak
+  Ekspor Laporan Excel           Ya                 Tidak
+  Pengaturan Toko                Ya                 Tidak
+  Manajemen Pengguna             Ya                 Tidak
+
+Harga modal dan laba bersifat rahasia pemilik: server tidak mengirim
+data modal dan laba ke akun Staff, bukan sekadar disembunyikan di
+tampilan.
 
 
 ====================================================================
-9. STRUKTUR DATABASE (8 TABEL)
+9. STRUKTUR DATABASE (9 TABEL)
 ====================================================================
 
 1. users
    id, name, email (unik), password_hash, role (admin/staff),
    is_active, created_at, updated_at
 
-2. products
-   id, name, category, size, unit (botol/ml), price, stock,
-   low_stock_threshold, status (aktif/nonaktif), created_at, updated_at
+2. price_catalog  (daftar harga acuan, diisi admin)
+   id, name (unik), category, size, unit (botol/ml), price,
+   cost_price, created_at, updated_at
 
-3. stock_movements  (riwayat pergerakan stok)
+3. products
+   id, catalog_id (FK->price_catalog, boleh kosong), name, category,
+   size, unit (botol/ml), price, cost_price, stock, low_stock_threshold,
+   status (aktif/nonaktif), created_at, updated_at
+   (stok varian dalam ml, stok botol dan produk lain dalam buah)
+
+4. stock_movements  (riwayat pergerakan stok)
    id, product_id (FK->products), type (masuk/penjualan/penyesuaian),
    quantity, stock_before, stock_after, note, user_id (FK->users),
    created_at
+   (pembatalan transaksi dicatat sebagai pergerakan "penjualan"
+   bernilai positif dengan catatan "Pembatalan TRX-...")
 
-4. sales  (transaksi penjualan)
-   id, transaction_number (unik), date, total, payment_method
-   (tunai/qris/transfer), user_id (FK->users), created_at
+5. sales  (transaksi penjualan)
+   id, transaction_number (unik), date, total (setelah diskon),
+   discount, payment_method (tunai/qris/transfer), customer_note,
+   amount_paid, status (selesai/batal), cancel_reason, cancelled_at,
+   cancelled_by (FK->users), user_id (FK->users), created_at
 
-5. sale_items  (item per transaksi)
+6. sale_items  (item per transaksi)
    id, sale_id (FK->sales), product_id (FK->products), quantity,
-   unit_price, subtotal
+   unit_price, cost_price (salinan modal saat transaksi, boleh kosong),
+   subtotal
+   (satu racikan tersimpan sebagai dua item: varian [quantity = ml]
+   dan botol [quantity = buah])
 
-6. daily_closings  (rekap closing harian)
+7. daily_closings  (rekap closing harian)
    id, closing_date (unik), total_transactions, total_items_sold,
-   total_revenue, status (terbuka/ditutup), note,
-   closed_by (FK->users), created_at
+   total_revenue, total_cash, total_qris, total_transfer,
+   opening_cash, cash_actual, cash_difference, status
+   (terbuka/ditutup), note, closed_by (FK->users), created_at
 
-7. daily_closing_items  (detail rekonsiliasi stok per produk saat closing)
+8. daily_closing_items  (detail rekonsiliasi stok per produk)
    id, closing_id (FK->daily_closings), product_id (FK->products),
    opening_stock, stock_added, quantity_sold, system_stock,
    actual_stock, difference, note
 
-8. settings  (identitas & konfigurasi toko)
+9. settings  (identitas & konfigurasi toko)
    id, store_name, owner_name, address, phone, currency,
    default_low_stock_threshold
 
-Relasi utama: products <-1:N- stock_movements, products <-1:N- sale_items,
-sales <-1:N- sale_items, daily_closings <-1:N- daily_closing_items,
-users <-1:N- stock_movements/sales/daily_closings (siapa yang input).
+Relasi utama: price_catalog <-1:N- products, products <-1:N-
+stock_movements, products <-1:N- sale_items, sales <-1:N- sale_items,
+daily_closings <-1:N- daily_closing_items, users <-1:N-
+stock_movements/sales/daily_closings (siapa yang input/membatalkan).
+
+Prinsip desain: harga dan modal disalin ke tiap transaksi (snapshot),
+sehingga mengubah harga di masa depan tidak mengubah laporan masa lalu.
 
 
 ====================================================================
-10. KEAMANAN SISTEM
+10. KEAMANAN & KEANDALAN SISTEM
 ====================================================================
 
-- Autentikasi berbasis JWT (JSON Web Token), masa berlaku token 12 jam.
-- Password pengguna di-hash dengan bcrypt (10 salt rounds) — password
-  asli tidak pernah disimpan di database.
+- Autentikasi berbasis JWT, masa berlaku token 12 jam.
+- Password di-hash dengan bcrypt (10 salt rounds) — password asli
+  tidak pernah disimpan.
 - Middleware requireAuth memverifikasi token di setiap endpoint API
-  yang butuh login.
-- Middleware requireRole('admin') membatasi endpoint sensitif (produk
-  create/update/delete, laporan, ekspor Excel, pengaturan, manajemen
-  pengguna) hanya untuk role admin.
-- Validasi input dilakukan di layer backend (service), bukan hanya di
-  frontend, sehingga tetap aman walau request dikirim langsung tanpa
-  lewat antarmuka.
-- Transaksi database (DB transaction + row locking) dipakai pada
-  proses kritikal seperti penjualan dan closing harian, agar stok
-  tidak bisa menjadi negatif atau tercatat ganda saat diakses
-  bersamaan (concurrent).
+  yang butuh login; requireRole('admin') membatasi endpoint sensitif
+  (produk create/update/delete, katalog, pembatalan transaksi,
+  laporan, ekspor Excel, pengaturan, manajemen pengguna).
+- Data sensitif dibatasi di sisi server: modal dan laba hanya
+  dikirim untuk admin.
+- Validasi input di backend (service), bukan hanya di frontend:
+  harga, diskon (tidak boleh melebihi subtotal), uang diterima,
+  metode pembayaran, ukuran botol (kelipatan 5 ml, 5-100 ml).
+- Transaksi database (DB transaction + row locking) pada penjualan,
+  pembatalan, dan closing; jumlah produk yang sama dalam satu
+  transaksi digabung sebelum cek stok, sehingga stok tidak bisa minus
+  atau tercatat ganda saat diakses bersamaan.
+- Pembatalan transaksi tidak diizinkan setelah hari tersebut
+  di-closing, dan tidak bisa dilakukan dua kali.
+- Rahasia (kata sandi database, kunci JWT) disimpan di file .env yang
+  tidak ikut ke repositori; hanya .env.example yang disertakan.
+- Perubahan struktur database di server produksi selalu didahului
+  backup (mysqldump).
 
 
 ====================================================================
-11. AKUN DEMO
+11. PENGUJIAN
+====================================================================
+
+- Setiap modul diuji langsung di aplikasi selama iterasi prototipe.
+- Pengujian skenario terhadap MySQL asli (16 skenario) meliputi:
+  perhitungan racik + diskon + kembalian, penggabungan produk yang
+  sama, penolakan stok melebihi sisa, validasi diskon/uang/metode,
+  pembatalan (stok kembali, keluar dari laporan dan closing),
+  perhitungan laba, penyebaran perubahan harga katalog dengan
+  transaksi lama tetap, transaksi tanpa modal, rekonsiliasi kas
+  (selisih), serta penolakan closing ganda dan pembatalan setelah
+  closing. Instalasi dari nol dengan schema.sql + seed.sql juga
+  diuji. (Skrip uji tidak disertakan di repositori.)
+
+
+====================================================================
+12. AKUN DEMO
 ====================================================================
 
   Peran         Email                       Password
@@ -350,27 +496,57 @@ users <-1:N- stock_movements/sales/daily_closings (siapa yang input).
   Owner/Admin   admin@globalparfum.id       admin123
   Staff         staff@globalparfum.id       staff123
 
+Catatan: akun ini dibuat oleh seed.sql pada instalasi LOKAL. Server
+yang dipakai sungguhan memakai kata sandi sendiri. Kata sandi bawaan
+sebaiknya diganti sebelum aplikasi dipakai di internet.
+
+Data contoh pada seed (instalasi baru): 6 varian parfum (stok 1.000 ml),
+5 ukuran botol 10-100 ml (stok 50 buah), katalog harga dan modal
+contoh. Belum ada transaksi — dicoba lewat menu Penjualan.
+
 
 ====================================================================
-12. CARA MENJALANKAN APLIKASI (RINGKAS)
+13. CARA MENJALANKAN APLIKASI (RINGKAS)
 ====================================================================
 
 1. Nyalakan database   : docker compose up -d
-2. Nyalakan backend    : cd server && npm install && npm run dev
+2. Nyalakan backend    : cd server && cp .env.example .env
+                          && npm install && npm run dev
                           -> berjalan di http://localhost:4000
 3. Nyalakan frontend   : cd client && npm install && npm run dev
                           -> berjalan di http://localhost:5173
 4. Buka browser ke http://localhost:5173 dan login.
 
+Alur mencoba cepat: Login (admin) -> Katalog Harga -> Produk (ketik
+nama dari katalog) -> Penjualan > Racik Parfum -> simpan -> struk ->
+batalkan transaksi -> Closing Harian (stok & kas) -> Laporan (laba).
+
 
 ====================================================================
-13. POTENSI PENGEMBANGAN LANJUTAN (untuk slide "Kesimpulan & Saran")
+14. CATATAN PENGEMBANGAN
 ====================================================================
 
-- Notifikasi otomatis (misal WhatsApp/email) saat stok produk menipis.
+Proyek ini dikembangkan oleh tim dengan bantuan AI (Claude, Anthropic)
+sebagai alat bantu: penulisan kode, perbaikan bug, dan dokumentasi
+dikerjakan bersama AI. Kebutuhan toko, keputusan fitur (harga per ml,
+harga botol, katalog harga, pembatalan transaksi, modal dan laba,
+kas harian), serta pengujian dan penentuan hasil akhir dilakukan oleh
+tim.
+
+
+====================================================================
+15. POTENSI PENGEMBANGAN LANJUTAN (untuk slide "Kesimpulan & Saran")
+====================================================================
+
+- Validasi kapasitas botol (isi tidak melebihi ukuran) juga di sisi
+  server, bukan hanya di tampilan.
+- Kolom modal dan laba pada ekspor Excel; laporan per varian (ml
+  terjual, omzet, laba).
+- Fitur ganti/reset kata sandi pengguna dari aplikasi.
+- Notifikasi otomatis (misal WhatsApp/email) saat stok menipis.
+- Pengaturan struk lebih lengkap (logo, teks penutup, ukuran kertas
+  58/80 mm).
 - Dukungan multi-cabang/multi-toko dalam satu sistem.
-- Grafik & analitik laporan yang lebih lengkap (per kategori produk,
-  per metode pembayaran, dsb).
 - Riwayat/log audit perubahan data yang lebih rinci.
 - Aplikasi mobile (companion app) untuk kasir di lapangan.
 
