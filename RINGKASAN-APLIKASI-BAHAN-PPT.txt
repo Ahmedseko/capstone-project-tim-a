@@ -523,19 +523,7 @@ batalkan transaksi -> Closing Harian (stok & kas) -> Laporan (laba).
 
 
 ====================================================================
-14. CATATAN PENGEMBANGAN
-====================================================================
-
-Proyek ini dikembangkan oleh tim dengan bantuan AI (Claude, Anthropic)
-sebagai alat bantu: penulisan kode, perbaikan bug, dan dokumentasi
-dikerjakan bersama AI. Kebutuhan toko, keputusan fitur (harga per ml,
-harga botol, katalog harga, pembatalan transaksi, modal dan laba,
-kas harian), serta pengujian dan penentuan hasil akhir dilakukan oleh
-tim.
-
-
-====================================================================
-15. POTENSI PENGEMBANGAN LANJUTAN (untuk slide "Kesimpulan & Saran")
+14. POTENSI PENGEMBANGAN LANJUTAN (untuk slide "Kesimpulan & Saran")
 ====================================================================
 
 - Validasi kapasitas botol (isi tidak melebihi ukuran) juga di sisi
