@@ -16,7 +16,7 @@ Repositori      : https://github.com/Ahmedseko/capstone-project-tim-a
 Judul Capstone:
 "Perancangan dan Implementasi Sistem Informasi Manajemen Penjualan
 dan Stok Berbasis Web pada UMKM Parfum Global Parfum Kutoarjo
-Menggunakan Metode Prototyping"
+Menggunakan Metode Waterfall"
 
 Deskripsi Singkat:
 Sistem Informasi Manajemen Penjualan dan Stok untuk UMKM Parfum —
@@ -59,60 +59,80 @@ Tujuan Sistem:
 
 
 ====================================================================
-3. METODE PENGEMBANGAN: PROTOTYPING
+3. METODE PENGEMBANGAN: WATERFALL
 ====================================================================
 
-Tahapan yang dilakukan:
-1. Pengumpulan Kebutuhan (Requirement Gathering)
-   - Identifikasi proses bisnis toko parfum: produk, stok, penjualan,
-     closing harian, laporan. Kebutuhan baru terus muncul dari
-     masukan pemilik/tim setelah prototipe dicoba.
-2. Membangun Prototipe (Quick Design & Build)
-   - Modul dibangun bertahap: mulai dari autentikasi, produk & stok,
-     penjualan, closing harian, laporan, lalu manajemen pengguna.
-3. Evaluasi Prototipe
-   - Setiap modul diuji langsung (fungsional, alur data ke database)
-     sebelum lanjut ke modul berikutnya.
-4. Perbaikan / Revisi Prototipe
-   - Contoh nyata dari riwayat pengembangan (urut waktu):
-     * Aksi "nonaktifkan produk" diganti jadi hapus produk yang
-       sesungguhnya (delete), dengan fallback otomatis ke nonaktif
-       jika produk sudah punya riwayat transaksi (agar data historis
-       tidak rusak).
-     * Ditambahkan input stok untuk banyak produk sekaligus dalam
-       satu form, setelah alur satu-per-satu dinilai kurang efisien.
-     * Data dummy pada seed dihapus agar aplikasi mulai dari kondisi
-       bersih (kemudian seed diberi data contoh yang jelas ditandai,
-       untuk memudahkan penilaian).
-     * Konsep satuan jual (botol vs ml) ditambahkan setelah disadari
-       sebagian parfum dijual eceran per ml.
-     * Masukan baru dari tim: harga per ml, harga botol berbeda tiap
-       ukuran, dan daftar varian. Model dirombak: varian parfum
-       dijual per ml (stok dalam ml), botol kosong dijual per buah,
-       dan keduanya digabung saat transaksi ("Racik Parfum").
-     * Ditambahkan Katalog Harga (admin): ketik nama produk, harga
-       terisi otomatis. Mengubah harga katalog ikut mengubah produk
-       terkait, sementara transaksi lama tidak berubah.
-     * Ukuran botol dibatasi kelipatan 5 ml (5-100 ml) berdasarkan
-       masukan, dengan validasi di tampilan dan di server.
-     * Halaman Penjualan dirombak: tampilan kasir lebih cepat
-       (kartu varian, tombol ukuran botol, isi cepat), diskon,
-       uang diterima + kembalian, struk cetak/PDF, dan pembatalan
-       transaksi.
-     * Ditambahkan harga modal dan laba, serta rekonsiliasi kas di
-       closing harian, setelah disadari omzet saja tidak cukup untuk
-       pemilik usaha.
-     * Perbaikan dari hasil uji coba: judul halaman, label pembatalan
-       di riwayat stok, logout otomatis saat sesi habis, batas stok
-       menipis yang sesuai satuan ml, dan grafik yang terbaca saat
-       data masih sedikit.
-5. Iterasi berulang hingga sistem dinyatakan siap digunakan pengguna.
+Waterfall adalah model pengembangan perangkat lunak yang berjalan
+berurutan: setiap tahap diselesaikan dan menghasilkan dokumen/artefak
+sebelum tahap berikutnya dimulai.
 
-Kenapa Prototyping dipilih (bukan Waterfall):
-Pengembangan tidak berjalan satu alur linear dari awal sampai akhir,
-melainkan bertahap per-modul dengan revisi berdasarkan hasil uji
-coba tiap tahap. Kebutuhan toko (misalnya model harga per ml)
-baru jelas setelah prototipe dicoba — ciri khas metode Prototyping.
+Tahapan dan hasil nyata pada proyek ini:
+
+1. Analisis Kebutuhan (Requirements Analysis)
+   - Mengidentifikasi proses bisnis toko parfum: produk, stok,
+     penjualan, closing harian, laporan.
+   - Menentukan pengguna dan hak akses: pemilik/admin dan staf toko.
+   - Menetapkan kebutuhan khusus toko parfum: penjualan per mililiter
+     (ml) yang dikemas ke botol pilihan pembeli, harga botol berbeda
+     tiap ukuran, dan daftar varian parfum.
+   - Hasil: daftar kebutuhan fungsional (modul dan fitur) dan peran
+     pengguna.
+
+2. Perancangan Sistem (System Design)
+   - Perancangan antarmuka: desain layar (mockup) dan gaya visual.
+   - Perancangan arsitektur: client-server dengan REST API
+     (React, Express, MySQL).
+   - Perancangan database: struktur tabel dan relasi
+     (database/schema.sql).
+   - Perancangan keamanan: autentikasi JWT dan pembatasan akses per
+     peran.
+   - Hasil: desain antarmuka, skema database, daftar endpoint API.
+
+3. Implementasi (Coding)
+   - Pembuatan kode frontend (React + TypeScript + Tailwind) dan
+     backend (Node.js + Express), dikerjakan per modul: autentikasi,
+     produk, stok, penjualan, closing harian, laporan, pengguna.
+   - Hasil: aplikasi web yang dapat dijalankan (repositori GitHub).
+
+4. Pengujian (Testing)
+   - Pengujian fungsional setiap modul langsung di aplikasi.
+   - Pengujian skenario terhadap MySQL asli (lihat bagian 11).
+   - Pengujian instalasi dari nol memakai schema dan seed.
+   - Hasil: temuan dan perbaikan bug sebelum penerapan.
+
+5. Penerapan dan Pemeliharaan (Deployment & Maintenance)
+   - Penerapan ke server (VPS) dengan Nginx dan layanan systemd.
+   - Perubahan struktur database diterapkan lewat file migrasi
+     bernomor, selalu didahului backup.
+   - Permintaan perubahan setelah aplikasi dicoba pemilik/tim
+     ditangani pada tahap ini sebagai perubahan terkontrol
+     (change request), contohnya:
+     * Model harga per ml + harga botol (Racik Parfum) dan Katalog
+       Harga.
+     * Ukuran botol dibatasi kelipatan 5 ml (5-100 ml).
+     * Perombakan halaman Penjualan: diskon, uang diterima, struk
+       cetak/PDF, pembatalan transaksi.
+     * Harga modal dan laba, serta rekonsiliasi kas harian.
+     * Perbaikan dari hasil uji coba (judul halaman, label
+       pembatalan, logout otomatis saat sesi habis, batas stok ml,
+       grafik).
+     Setiap perubahan melalui ulang analisis singkat, perancangan,
+     implementasi, dan pengujian sebelum diterapkan.
+
+Alasan memilih Waterfall:
+- Ruang lingkup sistem informasi toko relatif jelas dan terstruktur
+  (produk, stok, penjualan, closing, laporan).
+- Setiap tahap menghasilkan dokumentasi yang mudah ditelusuri dan
+  dinilai (kebutuhan, desain, kode, hasil uji).
+- Cocok untuk proyek dengan tim kecil dan jadwal yang tetap.
+
+Keterbatasan yang ditemui (bahan untuk slide "Evaluasi"):
+- Kebutuhan toko yang berubah setelah aplikasi dicoba, terutama model
+  harga per ml, baru jelas pada tahap penerapan sehingga memerlukan
+  perubahan struktur database dan beberapa halaman. Pada Waterfall
+  perubahan di tahap akhir lebih mahal dibanding perubahan di tahap
+  awal. Pelajaran: libatkan pemilik toko lebih awal saat analisis
+  kebutuhan, terutama untuk model harga dan cara jual.
 
 
 ====================================================================
@@ -475,7 +495,7 @@ sehingga mengubah harga di masa depan tidak mengubah laporan masa lalu.
 11. PENGUJIAN
 ====================================================================
 
-- Setiap modul diuji langsung di aplikasi selama iterasi prototipe.
+- Setiap modul diuji langsung di aplikasi pada tahap pengujian.
 - Pengujian skenario terhadap MySQL asli (16 skenario) meliputi:
   perhitungan racik + diskon + kembalian, penggabungan produk yang
   sama, penolakan stok melebihi sisa, validasi diskon/uang/metode,
