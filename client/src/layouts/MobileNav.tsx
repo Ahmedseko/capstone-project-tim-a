@@ -34,14 +34,14 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
   return createPortal(
     <div className="fixed inset-0 z-50 lg:hidden">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-64 h-full bg-surface border-r border-border flex flex-col animate-in">
+      <div className="relative w-64 max-w-[85vw] h-full bg-surface border-r border-border flex flex-col animate-in">
         <div className="flex items-center justify-between px-4 h-14 border-b border-border">
           <span className="text-[13px] font-semibold text-text">Global Parfum</span>
           <button onClick={onClose} className="p-1 text-text-muted hover:text-text" aria-label="Tutup">
             <X size={16} />
           </button>
         </div>
-        <nav className="flex-1 px-2.5 py-3 space-y-0.5">
+        <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
           {items.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -49,7 +49,7 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
               onClick={onClose}
               className={({ isActive }) =>
                 clsx(
-                  'flex items-center gap-2.5 px-2.5 h-9 rounded-md text-[13px] transition',
+                  'flex items-center gap-2.5 px-2.5 h-11 rounded-md text-[14px] transition',
                   isActive ? 'bg-white/[0.06] text-text' : 'text-text-muted hover:text-text hover:bg-white/[0.04]',
                 )
               }

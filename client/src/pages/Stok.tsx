@@ -110,7 +110,7 @@ export default function Stok() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-text-muted">Pantau stok saat ini dan riwayat pergerakan stok.</p>
         <Button onClick={openModal}>
           <Plus size={15} />
@@ -123,7 +123,7 @@ export default function Stok() {
           Stok Saat Ini
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm max-md:[&_:is(th,td):nth-child(2)]:hidden max-md:[&_:is(th,td):nth-child(4)]:hidden">
             <thead>
               <tr className="border-b border-border bg-bg/50">
                 {['Produk', 'Kategori', 'Stok', 'Batas Minimum', 'Status'].map((h) => (
@@ -145,7 +145,10 @@ export default function Stok() {
                 const low = p.stock <= p.lowStockThreshold;
                 return (
                   <tr key={p.id} className="hover:bg-white/[0.02] transition">
-                    <td className="px-3.5 py-2.5 text-text">{p.name}</td>
+                    <td className="px-3.5 py-2.5 text-text">
+                      {p.name}
+                      <div className="md:hidden text-[11px] text-text-faint font-normal mt-0.5">{p.category}</div>
+                    </td>
                     <td className="px-3.5 py-2.5 text-text-muted">{p.category}</td>
                     <td className="px-3.5 py-2.5 font-mono tnum text-text">
                       {p.stock} <span className="text-text-faint">{p.unit}</span>
@@ -167,7 +170,7 @@ export default function Stok() {
           Riwayat Stok
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm max-md:[&_:is(th,td):nth-child(5)]:hidden max-md:[&_:is(th,td):nth-child(7)]:hidden">
             <thead>
               <tr className="border-b border-border bg-bg/50">
                 {['Tanggal', 'Produk', 'Jenis', 'Jumlah', 'Stok Sebelum', 'Stok Sesudah', 'Catatan'].map((h) => (

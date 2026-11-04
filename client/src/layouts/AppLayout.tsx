@@ -35,7 +35,7 @@ export function AppLayout() {
   const title = titles[location.pathname] ?? 'Global Parfum Kutoarjo';
 
   return (
-    <div className="flex h-screen bg-bg text-text overflow-hidden print:h-auto print:overflow-visible print:bg-white print:text-black">
+    <div className="flex h-dvh bg-bg text-text overflow-hidden print:h-auto print:overflow-visible print:bg-white print:text-black">
       <div className="print:hidden">
         <Sidebar />
       </div>
@@ -48,7 +48,7 @@ export function AppLayout() {
             onOpenMobileNav={() => setMobileNavOpen(true)}
           />
         </div>
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 print:overflow-visible print:p-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 lg:p-6 print:overflow-visible print:p-0">
           <Outlet />
         </main>
       </div>

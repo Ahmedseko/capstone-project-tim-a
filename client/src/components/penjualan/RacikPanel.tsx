@@ -75,11 +75,11 @@ export function RacikPanel({
   return (
     <div className="p-3.5 space-y-4">
       <section>
-        <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <h3 className="text-xs font-medium text-text-faint uppercase tracking-wide">1. Pilih varian</h3>
-          <div className="relative w-48">
+          <div className="relative w-full sm:w-48">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-faint" />
-            <Input placeholder="Cari varian..." className="pl-7 h-8" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input placeholder="Cari varian..." className="pl-7 h-10 lg:h-8" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
         </div>
         {variants.length === 0 ? (
@@ -186,7 +186,7 @@ export function RacikPanel({
 
       {error && <div className="text-[13px] text-danger">{error}</div>}
 
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-bg px-3.5 py-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-bg px-3.5 py-3">
         <div className="text-sm text-text-muted">
           {total > 0 && variant && bottle ? (
             <>
@@ -199,7 +199,7 @@ export function RacikPanel({
             'Pilih varian, botol, dan isi.'
           )}
         </div>
-        <Button disabled={!canAdd} onClick={add}>
+        <Button className="w-full sm:w-auto" disabled={!canAdd} onClick={add}>
           <Plus size={15} />
           Tambah ke Keranjang
         </Button>

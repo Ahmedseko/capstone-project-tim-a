@@ -13,13 +13,13 @@ export function Topbar({
     <header className="flex items-center gap-3 h-14 px-4 lg:px-6 border-b border-border bg-surface/80 backdrop-blur-md shrink-0">
       <button
         onClick={onOpenMobileNav}
-        className="lg:hidden p-1.5 -ml-1.5 rounded text-text-muted hover:text-text hover:bg-white/[0.06] transition"
+        className="lg:hidden p-2 -ml-2 rounded text-text-muted hover:text-text hover:bg-white/[0.06] transition"
         aria-label="Buka menu"
       >
         <Menu size={18} />
       </button>
 
-      <h1 className="text-[15px] font-semibold text-text">{title}</h1>
+      <h1 className="text-[15px] font-semibold text-text truncate min-w-0">{title}</h1>
 
       <div className="flex-1" />
 
@@ -34,7 +34,7 @@ export function Topbar({
 
       <button
         onClick={onOpenPalette}
-        className="sm:hidden p-1.5 rounded text-text-muted hover:text-text hover:bg-white/[0.06] transition"
+        className="sm:hidden p-2 rounded text-text-muted hover:text-text hover:bg-white/[0.06] transition"
         aria-label="Cari"
       >
         <Search size={17} />

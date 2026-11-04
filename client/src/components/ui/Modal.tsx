@@ -30,7 +30,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div
         className={clsx(
@@ -51,8 +51,8 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <X size={16} />
           </button>
         </div>
-        <div className="px-5 py-4 max-h-[70vh] overflow-y-auto">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">{footer}</div>}
+        <div className="px-4 sm:px-5 py-4 max-h-[calc(100dvh-11rem)] sm:max-h-[70vh] overflow-y-auto">{children}</div>
+        {footer && <div className="flex flex-wrap items-center justify-end gap-2 px-4 sm:px-5 py-3 border-t border-border">{footer}</div>}
       </div>
     </div>,
     document.body,

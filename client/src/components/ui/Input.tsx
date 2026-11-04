@@ -9,7 +9,7 @@ import {
 import { cn } from '../../utils/cn';
 
 const fieldClasses =
-  'w-full h-9 px-3 rounded-lg bg-bg border border-border text-sm text-text placeholder:text-text-faint focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition disabled:opacity-50';
+  'w-full h-10 lg:h-9 px-3 rounded-lg bg-bg border border-border text-sm text-text placeholder:text-text-faint focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition disabled:opacity-50';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (

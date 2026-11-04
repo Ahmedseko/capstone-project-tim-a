@@ -36,7 +36,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-bg p-4">
       <div className="relative w-full max-w-4xl overflow-hidden rounded-xl border border-border bg-surface shadow-2xl">
         <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-accent/10 blur-[100px]" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-accent-glow/10 blur-[110px]" />
@@ -65,7 +65,13 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="p-8 sm:p-10 flex flex-col justify-center">
+          <div className="p-6 sm:p-10 flex flex-col justify-center">
+            <div className="lg:hidden flex items-center gap-2.5 mb-6">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent/15 text-accent">
+                <SprayCan size={17} />
+              </div>
+              <div className="text-sm font-semibold text-text">Global Parfum Kutoarjo</div>
+            </div>
             <h2 className="text-lg font-semibold text-text mb-1">Masuk ke Akun Anda</h2>
             <p className="text-sm text-text-muted mb-6">Gunakan email dan kata sandi Anda.</p>
 

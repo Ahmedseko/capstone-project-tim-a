@@ -9,7 +9,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { RacikPanel } from '../components/penjualan/RacikPanel';
 import { CartPanel } from '../components/penjualan/CartPanel';
 import { ReceiptModal } from '../components/penjualan/Receipt';
-import { type CartLine, available, isRacik, maxMl, maxQty } from '../components/penjualan/cart';
+import { type CartLine, available, isRacik, linePrice, maxMl, maxQty } from '../components/penjualan/cart';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { listProducts } from '../services/products';
@@ -52,6 +52,7 @@ export default function Penjualan() {
     () => products.filter((p) => !isRacik(p) && p.name.toLowerCase().includes(search.toLowerCase())),
     [products, search],
   );
+  const cartTotal = lines.reduce((sum, l) => sum + linePrice(l), 0);
   const todaySales = useMemo(() => sales.filter((s) => s.date === todayIso()), [sales]);
 
   function addRacik(variant: Product, bottle: Product, ml: number) {
@@ -121,7 +122,7 @@ export default function Penjualan() {
   ];
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+    <div className={`grid grid-cols-1 xl:grid-cols-5 gap-4 ${lines.length > 0 ? 'pb-20 xl:pb-0' : ''}`}>
       <div className="xl:col-span-3 space-y-4">
         <Card className="overflow-hidden">
           <div className="flex border-b border-border">
@@ -214,6 +215,20 @@ export default function Penjualan() {
       <div className="xl:col-span-2">
         <CartPanel lines={lines} saving={saving} error={error} onQty={setQty} onMl={setMl} onRemove={removeLine} onSubmit={handleSubmit} />
       </div>
+
+      {/* Ponsel/tablet: keranjang ada di bawah, jadi tampilkan bilah ringkas agar kasir tidak perlu menggulir mencarinya. */}
+      {lines.length > 0 && (
+        <div className="xl:hidden fixed bottom-0 inset-x-0 lg:left-[240px] z-30 flex items-center gap-3 border-t border-border bg-surface/95 backdrop-blur px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] text-text-faint">{lines.length} item di keranjang</div>
+            <div className="text-base font-semibold font-mono tnum text-text truncate">{formatCurrency(cartTotal)}</div>
+          </div>
+          <Button onClick={() => document.getElementById('keranjang')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            <ShoppingCart size={15} />
+            Lihat Keranjang
+          </Button>
+        </div>
+      )}
 
       <ReceiptModal sale={receipt} store={store} isAdmin={user?.role === 'admin'} onClose={() => setReceipt(null)} onChanged={load} />
     </div>

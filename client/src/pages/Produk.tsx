@@ -154,7 +154,7 @@ export default function Produk() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-48">
+        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full sm:w-48">
           <option value="">Semua Kategori</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>
@@ -162,7 +162,7 @@ export default function Produk() {
             </option>
           ))}
         </Select>
-        <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-40">
+        <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full sm:w-40">
           <option value="">Semua Status</option>
           <option value="aktif">Aktif</option>
           <option value="nonaktif">Nonaktif</option>
@@ -177,7 +177,7 @@ export default function Produk() {
 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className={`w-full text-sm max-md:[&_:is(th,td):nth-child(2)]:hidden max-md:[&_:is(th,td):nth-child(3)]:hidden ${isAdmin ? 'max-md:[&_:is(th,td):nth-child(5)]:hidden max-sm:[&_:is(th,td):nth-child(7)]:hidden' : 'max-sm:[&_:is(th,td):nth-child(6)]:hidden'}`}>
             <thead>
               <tr className="border-b border-border bg-bg/50">
                 {(isAdmin
@@ -200,7 +200,10 @@ export default function Produk() {
               )}
               {filtered.map((p) => (
                 <tr key={p.id} className="hover:bg-white/[0.02] transition">
-                  <td className="px-3.5 py-2.5 text-text">{p.name}</td>
+                  <td className="px-3.5 py-2.5 text-text">
+                    {p.name}
+                    <div className="md:hidden text-[11px] text-text-faint font-normal mt-0.5">{p.category} · {p.size}{p.status === 'nonaktif' ? ' · Nonaktif' : ''}</div>
+                  </td>
                   <td className="px-3.5 py-2.5 text-text-muted">{p.category}</td>
                   <td className="px-3.5 py-2.5 text-text-muted font-mono">{p.size}</td>
                   <td className="px-3.5 py-2.5 text-text font-mono tnum">
@@ -282,7 +285,7 @@ export default function Produk() {
               <p className="text-[11px] text-success mt-1">Harga diambil dari katalog.</p>
             )}
           </FormField>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Kategori">
               <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value, ...CATEGORY_DEFAULTS[e.target.value] })}>
                 {CATEGORIES.map((c) => (
@@ -296,7 +299,7 @@ export default function Produk() {
               <SizeField category={form.category} value={form.size} onChange={(size) => setForm({ ...form, size })} />
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Satuan Jual">
               <Select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value as ProductUnit })}>
                 {UNITS.map((u) => (

@@ -77,7 +77,7 @@ export default function Laporan() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2.5 print:hidden">
-        <Select value={preset} onChange={(e) => setPreset(e.target.value as Preset)} className="w-44">
+        <Select value={preset} onChange={(e) => setPreset(e.target.value as Preset)} className="w-full sm:w-44">
           <option value="today">Hari Ini</option>
           <option value="week">Minggu Ini</option>
           <option value="month">Bulan Ini</option>
@@ -85,9 +85,9 @@ export default function Laporan() {
         </Select>
         {preset === 'custom' && (
           <>
-            <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="w-40" />
+            <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="flex-1 min-w-[9rem] sm:flex-none sm:w-40" />
             <span className="text-text-faint text-sm">s/d</span>
-            <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="w-40" />
+            <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="flex-1 min-w-[9rem] sm:flex-none sm:w-40" />
           </>
         )}
         <div className="flex-1" />
@@ -127,7 +127,7 @@ export default function Laporan() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
             <StatCard label="Total Transaksi" value={`${data.totalTransactions}`} icon={Receipt} />
             <StatCard label="Total Pendapatan" value={formatCurrency(data.totalRevenue)} icon={Wallet} tone="success" />
             <StatCard label="Produk Terjual" value={`${data.totalItemsSold} item`} icon={Package2} />
@@ -208,7 +208,7 @@ export default function Laporan() {
               <CardTitle>Transaksi Penjualan</CardTitle>
             </CardHeader>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm print:text-black">
+              <table className="w-full text-sm print:text-black max-md:[&_:is(th,td):nth-child(3)]:hidden max-md:[&_:is(th,td):nth-child(6)]:hidden">
                 <thead>
                   <tr className="border-b border-border bg-bg/50 print:border-gray-300 print:bg-transparent">
                     {['Tanggal', 'No. Transaksi', 'Produk', 'Total', 'Laba', 'Metode'].map((h) => (

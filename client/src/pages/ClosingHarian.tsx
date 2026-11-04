@@ -93,7 +93,7 @@ export default function ClosingHarian() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Total Produk Terjual" value={`${closing.totalItemsSold} item`} icon={Package2} />
         <StatCard label="Total Pendapatan" value={formatCurrency(closing.totalRevenue)} icon={Receipt} tone="success" />
         <StatCard label="Total Transaksi" value={`${closing.totalTransactions}`} icon={ListChecks} />
@@ -131,7 +131,7 @@ export default function ClosingHarian() {
               {isClosed ? (
                 <span className="font-mono tnum text-text">{formatCurrency(closing.openingCash)}</span>
               ) : (
-                <Input type="number" min={0} className="w-36 h-8 text-right" value={openingCash || ''} placeholder="0"
+                <Input type="number" min={0} className="w-36 h-10 lg:h-8 text-right" value={openingCash || ''} placeholder="0"
                   onChange={(e) => setOpeningCash(Math.max(0, Number(e.target.value)))} />
               )}
             </div>
@@ -148,7 +148,7 @@ export default function ClosingHarian() {
               {isClosed ? (
                 <span className="font-mono tnum text-text">{cashActual == null ? '-' : formatCurrency(cashActual)}</span>
               ) : (
-                <Input type="number" min={0} className="w-36 h-8 text-right" value={cashActual ?? ''}
+                <Input type="number" min={0} className="w-36 h-10 lg:h-8 text-right" value={cashActual ?? ''}
                   onChange={(e) => setCashCounted(Math.max(0, Number(e.target.value)))} />
               )}
             </div>
@@ -207,7 +207,7 @@ export default function ClosingHarian() {
                       ) : (
                         <Input
                           type="number"
-                          className="w-20 h-8"
+                          className="w-24 h-10 lg:h-8"
                           value={actuals[item.productId] ?? item.systemStock}
                           onChange={(e) =>
                             setActuals((prev) => ({ ...prev, [item.productId]: Number(e.target.value) }))
@@ -227,7 +227,7 @@ export default function ClosingHarian() {
                         <span className="text-text-faint">{item.note ?? '-'}</span>
                       ) : (
                         <Input
-                          className="w-36 h-8"
+                          className="w-36 h-10 lg:h-8"
                           placeholder={diff !== 0 ? 'Contoh: Pecah 1 botol' : '-'}
                           value={notes[item.productId] ?? ''}
                           onChange={(e) => setNotes((prev) => ({ ...prev, [item.productId]: e.target.value }))}

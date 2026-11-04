@@ -28,6 +28,11 @@
   --color-warning: #f59e0b;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-text);
@@ -46,6 +51,22 @@ body {
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Layar sentuh / sempit: font input 16px mencegah iOS Safari memperbesar halaman saat mengetik. */
+@media (pointer: coarse), (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Hilangkan jeda double-tap-zoom pada tombol dan tautan. */
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 .tnum {

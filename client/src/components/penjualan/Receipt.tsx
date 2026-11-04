@@ -160,7 +160,7 @@ export function ReceiptModal({
             <Button variant="secondary" onClick={close}>
               Tutup
             </Button>
-            <Button onClick={print}>
+            <Button className="order-first w-full sm:order-none sm:w-auto" onClick={print}>
               <Printer size={15} />
               Cetak / Simpan PDF
             </Button>

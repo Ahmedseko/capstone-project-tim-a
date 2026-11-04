@@ -29,7 +29,7 @@ export function Sidebar() {
   const items = navItems.filter((item) => !item.adminOnly || user?.role === 'admin');
 
   return (
-    <aside className="hidden lg:flex flex-col w-[240px] shrink-0 border-r border-border bg-surface">
+    <aside className="hidden lg:flex flex-col h-full w-[240px] shrink-0 border-r border-border bg-surface">
       <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border">
         <div className="flex items-center justify-center w-7 h-7 rounded-md bg-accent/15 text-accent">
           <SprayCan size={15} />

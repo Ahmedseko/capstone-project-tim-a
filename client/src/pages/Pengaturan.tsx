@@ -134,7 +134,7 @@ export default function Pengaturan() {
           <FormField label="Alamat">
             <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </FormField>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Nomor Telepon">
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </FormField>

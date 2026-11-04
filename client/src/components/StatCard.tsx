@@ -18,14 +18,14 @@ const toneClasses = {
 
 export function StatCard({ label, value, icon: Icon, tone = 'accent', hint }: Props) {
   return (
-    <Card className="p-4">
+    <Card className="p-3 sm:p-4">
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-text-muted">{label}</span>
         <div className={clsx('flex items-center justify-center w-7 h-7 rounded-md', toneClasses[tone])}>
           <Icon size={14} />
         </div>
       </div>
-      <div className="text-xl font-semibold text-text tnum font-mono">{value}</div>
+      <div className="text-lg sm:text-xl font-semibold text-text tnum font-mono break-words">{value}</div>
       {hint && <div className="text-[11px] text-text-faint mt-1">{hint}</div>}
     </Card>
   );

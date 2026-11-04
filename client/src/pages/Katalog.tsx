@@ -108,7 +108,7 @@ export default function Katalog() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-faint" />
           <Input placeholder="Cari di katalog..." className="pl-8" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-48">
+        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full sm:w-48">
           <option value="">Semua Kategori</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>
@@ -128,7 +128,7 @@ export default function Katalog() {
 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm max-md:[&_:is(th,td):nth-child(2)]:hidden max-md:[&_:is(th,td):nth-child(3)]:hidden max-md:[&_:is(th,td):nth-child(5)]:hidden max-md:[&_:is(th,td):nth-child(6)]:hidden">
             <thead>
               <tr className="border-b border-border bg-bg/50">
                 {['Nama', 'Kategori', 'Ukuran', 'Harga Eceran', 'Modal', 'Produk Terkait', ''].map((h) => (
@@ -148,7 +148,10 @@ export default function Katalog() {
               )}
               {filtered.map((i) => (
                 <tr key={i.id} className="hover:bg-white/[0.02] transition">
-                  <td className="px-3.5 py-2.5 text-text">{i.name}</td>
+                  <td className="px-3.5 py-2.5 text-text">
+                    {i.name}
+                    <div className="md:hidden text-[11px] text-text-faint font-normal mt-0.5">{i.category} · {i.size}</div>
+                  </td>
                   <td className="px-3.5 py-2.5 text-text-muted">{i.category}</td>
                   <td className="px-3.5 py-2.5 text-text-muted">{i.size}</td>
                   <td className="px-3.5 py-2.5 text-text font-mono tnum">
@@ -205,7 +208,7 @@ export default function Katalog() {
           <FormField label="Nama">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Baccarat / Botol 30 ml" />
           </FormField>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Kategori">
               <Select
                 value={form.category}
@@ -222,7 +225,7 @@ export default function Katalog() {
               <SizeField category={form.category} value={form.size} onChange={(size) => setForm({ ...form, size })} />
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Satuan Jual">
               <Select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value as ProductUnit })}>
                 {UNITS.map((u) => (

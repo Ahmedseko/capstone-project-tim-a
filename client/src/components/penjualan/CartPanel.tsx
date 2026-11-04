@@ -19,7 +19,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
 const CASH_SHORTCUTS = [50000, 100000, 200000];
 
 const stepBtn =
-  'w-6 h-6 flex items-center justify-center rounded border border-border text-text-muted hover:text-text transition disabled:opacity-40';
+  'w-9 h-9 lg:w-6 lg:h-6 flex items-center justify-center rounded border border-border text-text-muted hover:text-text transition disabled:opacity-40';
 
 export function CartPanel({
   lines,
@@ -69,7 +69,7 @@ export function CartPanel({
   }
 
   return (
-    <Card className="overflow-hidden xl:sticky xl:top-0">
+    <Card id="keranjang" className="overflow-hidden scroll-mt-4 xl:sticky xl:top-0">
       <div className="px-3.5 py-2.5 border-b border-border text-xs font-medium text-text-faint uppercase tracking-wide">
         Keranjang
       </div>
@@ -96,7 +96,7 @@ export function CartPanel({
                     </>
                   )}
                 </div>
-                <button onClick={() => onRemove(l.id)} className="text-text-faint hover:text-danger transition p-0.5" aria-label="Hapus">
+                <button onClick={() => onRemove(l.id)} className="text-text-faint hover:text-danger transition p-2 -m-1.5 lg:p-0.5 lg:m-0" aria-label="Hapus">
                   <Trash2 size={13} />
                 </button>
               </div>
@@ -119,7 +119,7 @@ export function CartPanel({
                         max={maxMl(l, lines)}
                         value={l.ml}
                         onChange={(e) => onMl(l.id, Math.floor(Number(e.target.value)))}
-                        className="h-6 w-16 px-2 text-xs"
+                        className="h-9 w-16 px-2 text-xs lg:h-6"
                         aria-label="Isi ml"
                       />
                       <span className="text-[11px] text-text-faint">ml</span>
