@@ -25,7 +25,7 @@ export function StoreInfoCard({ store, heading = 'Kunjungi Toko' }: { store: Pub
               <Clock size={16} className="shrink-0 mt-0.5 text-accent-glow" aria-hidden="true" />
               <div>
                 <dt className="sr-only">Jam operasional</dt>
-                <dd className="whitespace-pre-line">{store.openingHours || 'Hubungi kami lewat WhatsApp untuk jam operasional.'}</dd>
+                <dd className="whitespace-pre-line">{store.openingHours || 'Hubungi kami via WhatsApp untuk informasi jam operasional.'}</dd>
               </div>
             </div>
             {store.phone && (

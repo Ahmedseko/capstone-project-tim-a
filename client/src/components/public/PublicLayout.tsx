@@ -91,7 +91,7 @@ export function PublicLayout() {
                   href={waLink(store.whatsapp)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Chat WhatsApp ${store.phone}`}
+                  aria-label={`Hubungi via WhatsApp ${store.phone}`}
                   title={`WhatsApp ${store.phone}`}
                   className="w-11 h-11 rounded-xl border border-border bg-surface flex items-center justify-center hover:bg-white/[0.07] transition"
                 >

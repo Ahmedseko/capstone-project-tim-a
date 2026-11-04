@@ -48,9 +48,9 @@ export default function PesananBerhasil() {
         <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center">
           <CheckCircle2 size={34} className="text-success" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-text">Pesanan terkirim</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-text">Pesanan Terkirim</h1>
         <p className="text-sm text-text-muted max-w-md leading-relaxed">
-          Terima kasih! Admin akan menghubungi Anda lewat WhatsApp untuk mengonfirmasi pesanan
+          Terima kasih! Admin akan menghubungi Anda melalui WhatsApp untuk mengonfirmasi pesanan
           {order.fulfillment === 'kirim' ? ', ongkos kirim,' : ''} dan pembayaran.
         </p>
       </div>
@@ -85,7 +85,7 @@ export default function PesananBerhasil() {
             rel="noopener noreferrer"
             className="h-12 flex-1 rounded-xl bg-[#25D366] text-[#06210F] text-sm font-bold flex items-center justify-center gap-2 hover:brightness-110 transition"
           >
-            <MessageCircle size={17} aria-hidden="true" /> Chat WhatsApp toko
+            <MessageCircle size={17} aria-hidden="true" /> Hubungi Toko via WhatsApp
           </a>
         )}
         <Link

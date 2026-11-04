@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
 
         <div className="text-[15px] font-bold text-accent-glow">
           {formatCurrency(product.price)}
-          <span className="text-xs font-medium text-text-faint"> /{racik ? 'ml' : 'pcs'}</span>
+          <span className="text-xs font-medium text-text-faint"> /{racik ? 'ml' : 'botol'}</span>
         </div>
         {racik && <p className="text-xs text-text-muted">Pilih ukuran botol dan isi sesuai selera.</p>}
 

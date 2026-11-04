@@ -19,7 +19,7 @@ export default function Keranjang() {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center flex flex-col items-center gap-4">
         <ShoppingBag size={40} className="text-text-faint" aria-hidden="true" />
-        <h1 className="text-xl font-bold text-text">{loading ? 'Memuat keranjang...' : 'Keranjang masih kosong'}</h1>
+        <h1 className="text-xl font-bold text-text">{loading ? 'Memuat keranjang...' : 'Keranjang Masih Kosong'}</h1>
         {!loading && (
           <>
             <p className="text-sm text-text-muted">Pilih parfum di katalog, lalu tambahkan ke keranjang.</p>

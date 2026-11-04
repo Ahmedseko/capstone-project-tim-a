@@ -135,7 +135,7 @@ export default function CekPesanan() {
               rel="noopener noreferrer"
               className="h-12 rounded-xl bg-[#25D366] text-[#06210F] text-sm font-bold flex items-center justify-center gap-2 hover:brightness-110 transition"
             >
-              <MessageCircle size={17} aria-hidden="true" /> Tanya lewat WhatsApp
+              <MessageCircle size={17} aria-hidden="true" /> Tanya via WhatsApp
             </a>
           )}
         </section>

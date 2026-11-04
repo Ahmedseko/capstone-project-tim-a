@@ -124,7 +124,7 @@ export default function ProdukDetail() {
             </p>
             <div className="text-xl font-bold text-accent-glow">
               {formatCurrency(product.price)}
-              <span className="text-sm font-medium text-text-faint"> /{racik ? 'ml' : 'pcs'}</span>
+              <span className="text-sm font-medium text-text-faint"> /{racik ? 'ml' : 'botol'}</span>
             </div>
             {product.description && <p className="text-sm text-text-muted leading-relaxed whitespace-pre-line">{product.description}</p>}
           </div>
@@ -132,7 +132,7 @@ export default function ProdukDetail() {
           {racik && (
             <>
               <section className="flex flex-col gap-2.5">
-                <h2 className="text-sm font-bold text-text">1. Pilih ukuran botol</h2>
+                <h2 className="text-sm font-bold text-text">1. Pilih Ukuran Botol</h2>
                 {bottles.length === 0 ? (
                   <p className="text-sm text-warning">Botol sedang habis. Hubungi toko untuk info stok.</p>
                 ) : (
@@ -158,7 +158,7 @@ export default function ProdukDetail() {
               {bottle && (
                 <section className="flex flex-col gap-2.5">
                   <div className="flex items-baseline justify-between">
-                    <h2 className="text-sm font-bold text-text">2. Isi botol</h2>
+                    <h2 className="text-sm font-bold text-text">2. Isi Botol</h2>
                     <span className="text-xs text-text-faint">maksimal {bottle.capacity} ml</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -211,7 +211,7 @@ export default function ProdukDetail() {
           )}
 
           <section className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-bold text-text">{racik ? '3. Jumlah botol' : 'Jumlah'}</h2>
+            <h2 className="text-sm font-bold text-text">{racik ? '3. Jumlah Botol' : 'Jumlah'}</h2>
             <div className="flex items-center gap-2">
               <button className={stepBtn} aria-label="Kurangi jumlah" onClick={() => setQty((v) => Math.max(1, v - 1))} disabled={qty <= 1}>
                 <Minus size={18} />
@@ -243,7 +243,7 @@ export default function ProdukDetail() {
               <span className="font-semibold text-text">Total</span>
               <span className="text-2xl font-extrabold text-text">{formatCurrency(total)}</span>
             </div>
-            <p className="text-xs text-text-faint">Ongkos kirim (jika dikirim) dikonfirmasi admin lewat WhatsApp.</p>
+            <p className="text-xs text-text-faint">Ongkos kirim (jika dikirim) dikonfirmasi admin melalui WhatsApp.</p>
           </section>
 
           <div className="flex flex-col gap-2.5">

@@ -131,7 +131,7 @@ export default function Checkout() {
         )}
 
         <div className="flex flex-col gap-4">
-          <h2 className="text-sm font-bold text-text">Data pemesan</h2>
+          <h2 className="text-sm font-bold text-text">Data Pemesan</h2>
           <div>
             <label htmlFor="nama" className="block text-[13px] font-semibold text-text-muted mb-1.5">
               Nama lengkap
@@ -144,7 +144,7 @@ export default function Checkout() {
               Nomor WhatsApp
             </label>
             <input id="wa" className={field} value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" placeholder="081234567890" />
-            <p className="text-xs text-text-faint mt-1.5">Admin menghubungi nomor ini. Nomor ini juga dipakai untuk mengecek status pesanan.</p>
+            <p className="text-xs text-text-faint mt-1.5">Admin akan menghubungi Anda melalui nomor ini. Nomor ini juga dipakai untuk mengecek status pesanan.</p>
             {showErr(errors.phone)}
           </div>
           {fulfillment === 'kirim' && (

@@ -7,9 +7,9 @@ import { mediaUrl } from '../../services/public';
 import { usePageTitle, waLink } from '../../utils/storefront';
 
 const STEPS = [
-  { title: 'Pilih parfum', text: 'Lihat katalog, pilih aroma, ukuran botol, dan isi sesuai selera. Harga langsung terlihat.' },
-  { title: 'Isi data pesanan', text: 'Tulis nama, nomor WhatsApp, dan pilih ambil di toko atau dikirim. Tidak perlu membuat akun.' },
-  { title: 'Konfirmasi toko', text: 'Admin menghubungi lewat WhatsApp. Pantau statusnya kapan saja lewat menu Cek Pesanan.' },
+  { title: 'Pilih Parfum', text: 'Lihat katalog, pilih aroma, ukuran botol, dan isi sesuai selera. Harga langsung terlihat.' },
+  { title: 'Isi Data Pesanan', text: 'Tulis nama, nomor WhatsApp, dan pilih ambil di toko atau dikirim. Tidak perlu membuat akun.' },
+  { title: 'Konfirmasi Pesanan', text: 'Admin akan menghubungi Anda melalui WhatsApp. Status pesanan dapat dipantau kapan saja melalui menu Cek Pesanan.' },
 ];
 
 export default function Beranda() {
@@ -41,10 +41,10 @@ export default function Beranda() {
         <div className="flex flex-col gap-5">
           <span className="text-xs font-bold tracking-[0.14em] text-accent-glow">PARFUM RACIK &middot; KUTOARJO</span>
           <h1 className="text-[28px] sm:text-4xl lg:text-5xl font-extrabold leading-[1.15] text-text">
-            Wangi pilihanmu, diracik sesuai selera dan diantar ke rumah.
+            Wangi pilihanmu, diracik sesuai selera dan siap diantar ke rumah.
           </h1>
           <p className="text-[15px] sm:text-base text-text-muted leading-relaxed max-w-xl">
-            {store?.storeProfile || 'Pilih aroma, tentukan ukuran botol dan isinya, lalu pesan online. Atau datang langsung ke toko kami.'}
+            {store?.storeProfile || 'Global Parfum Kutoarjo adalah toko parfum di Kutoarjo, Purworejo. Kami melayani parfum racik per ml sesuai selera Anda, parfum botolan, dan perlengkapan parfum. Datang langsung ke toko atau pesan secara online. Kami siap membantu Anda menemukan aroma yang sesuai.'}
           </p>
           <div className="flex flex-wrap gap-3 mt-1">
             <Link to="/katalog" className="h-12 px-6 rounded-xl bg-accent text-white text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition">
@@ -57,7 +57,7 @@ export default function Beranda() {
                 rel="noopener noreferrer"
                 className="h-12 px-6 rounded-xl bg-[#25D366] text-[#06210F] text-sm font-bold flex items-center gap-2 hover:brightness-110 transition"
               >
-                <MessageCircle size={17} aria-hidden="true" /> Chat WhatsApp
+                <MessageCircle size={17} aria-hidden="true" /> Hubungi via WhatsApp
               </a>
             )}
             {store?.shopeeUrl && (
@@ -73,13 +73,13 @@ export default function Beranda() {
           </div>
           <ul className="grid grid-cols-3 gap-2 mt-2 text-center text-xs font-semibold text-text-muted max-w-md">
             <li className="rounded-xl border border-border bg-surface px-2 py-3 flex flex-col items-center gap-1.5">
-              <Droplets size={18} className="text-accent-glow" aria-hidden="true" /> Isi sesuai keinginan
+              <Droplets size={18} className="text-accent-glow" aria-hidden="true" /> Racik Sesuai Selera
             </li>
             <li className="rounded-xl border border-border bg-surface px-2 py-3 flex flex-col items-center gap-1.5">
-              <Truck size={18} className="text-accent-glow" aria-hidden="true" /> Antar ke rumah
+              <Truck size={18} className="text-accent-glow" aria-hidden="true" /> Antar ke Rumah
             </li>
             <li className="rounded-xl border border-border bg-surface px-2 py-3 flex flex-col items-center gap-1.5">
-              <MessageCircle size={18} className="text-accent-glow" aria-hidden="true" /> Konfirmasi WhatsApp
+              <MessageCircle size={18} className="text-accent-glow" aria-hidden="true" /> Konfirmasi via WhatsApp
             </li>
           </ul>
         </div>
@@ -108,7 +108,7 @@ export default function Beranda() {
 
       {photos.length > 1 && (
         <section aria-label="Foto toko" className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold text-text">Suasana toko</h2>
+          <h2 className="text-xl font-bold text-text">Galeri Toko</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {photos.slice(1).map((id) => (
               <div key={id} className="rounded-xl overflow-hidden border border-border aspect-[4/3] bg-surface">
@@ -121,7 +121,7 @@ export default function Beranda() {
 
       <section className="flex flex-col gap-5">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-text">Pilihan parfum</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-text">Parfum Pilihan</h2>
           <Link to="/katalog" className="text-sm font-semibold text-accent-glow hover:underline underline-offset-2 whitespace-nowrap">
             Lihat semua
           </Link>
@@ -140,7 +140,7 @@ export default function Beranda() {
       </section>
 
       <section className="flex flex-col gap-5">
-        <h2 className="text-xl sm:text-2xl font-bold text-text">Cara pesan</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-text">Cara Pesan</h2>
         <ol className="grid md:grid-cols-3 gap-4">
           {STEPS.map((s, i) => (
             <li key={s.title} className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2">

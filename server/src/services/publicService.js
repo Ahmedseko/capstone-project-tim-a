@@ -170,7 +170,7 @@ export async function createOrder(input) {
     [phone],
   );
   if (recent >= ORDERS_PER_HOUR) {
-    throw new AppError('Terlalu banyak pesanan dalam satu jam. Silakan hubungi toko lewat WhatsApp.', 429);
+    throw new AppError('Terlalu banyak pesanan dalam satu jam. Silakan hubungi toko via WhatsApp.', 429);
   }
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
