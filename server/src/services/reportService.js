@@ -1,6 +1,7 @@
 import { pool } from '../db/pool.js';
 import { listSales } from './saleService.js';
 import { todayIso, monthStartIso } from '../utils/date.js';
+import { orderSummary } from './orderService.js';
 
 async function getTrend(from, to) {
   const [rows] = await pool.query(
@@ -58,6 +59,10 @@ export async function getDashboardSummary({ isAdmin = false } = {}) {
      FROM sale_items si JOIN sales s ON s.id = si.sale_id JOIN products p ON p.id = si.product_id AND p.unit = 'botol' WHERE s.status = 'selesai' AND s.date = ?`,
     [today],
   );
+  const [[monthTotals]] = await pool.query(
+    `SELECT COUNT(*) AS sales_month, COALESCE(SUM(total), 0) AS revenue_month FROM sales WHERE status = 'selesai' AND date BETWEEN ? AND ?`,
+    [monthStart, today],
+  );
   const [[lowStock]] = await pool.query(
     `SELECT COUNT(*) AS low_stock_count FROM products WHERE status = 'aktif' AND stock <= low_stock_threshold`,
   );
@@ -75,6 +80,9 @@ export async function getDashboardSummary({ isAdmin = false } = {}) {
     salesToday: todayTotals.sales_today,
     revenueToday: Number(todayTotals.revenue_today),
     itemsSoldToday: Number(itemsToday.items_sold_today),
+    salesMonth: monthTotals.sales_month,
+    revenueMonth: Number(monthTotals.revenue_month),
+    onlineOrders: await orderSummary(),
     profitToday: profitToday?.grossProfit ?? null,
     salesWithoutCostToday: profitToday?.salesWithoutCost ?? null,
     lowStockCount: lowStock.low_stock_count,

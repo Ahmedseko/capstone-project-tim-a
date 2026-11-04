@@ -2,6 +2,21 @@ import { pool } from '../db/pool.js';
 import { AppError } from '../utils/AppError.js';
 import { assertBottleSize } from '../utils/bottleSize.js';
 
+function cleanDescription(value) {
+  const v = String(value ?? '').trim();
+  if (v.length > 2000) throw new AppError('Deskripsi maksimal 2000 karakter.', 400);
+  return v || null;
+}
+
+// Foto produk harus foto yang memang diunggah sebagai foto produk.
+async function assertProductPhoto(id) {
+  if (id == null) return null;
+  const photoId = Number(id);
+  const [rows] = await pool.query("SELECT id FROM media WHERE id = ? AND kind = 'produk'", [photoId]);
+  if (!Number.isInteger(photoId) || rows.length === 0) throw new AppError('Foto produk tidak valid.', 400);
+  return photoId;
+}
+
 function mapProduct(row) {
   return {
     id: row.id,
@@ -15,6 +30,9 @@ function mapProduct(row) {
     stock: row.stock,
     lowStockThreshold: row.low_stock_threshold,
     status: row.status,
+    photoId: row.photo_id,
+    description: row.description ?? '',
+    showOnline: Boolean(row.show_online),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -30,7 +48,7 @@ export async function getProductById(id) {
   return rows[0] ? mapProduct(rows[0]) : null;
 }
 
-export async function createProduct({ name, category, size, unit, price, costPrice, lowStockThreshold, catalogId }) {
+export async function createProduct({ name, category, size, unit, price, costPrice, lowStockThreshold, catalogId, description, showOnline, photoId }) {
   if (!name?.trim() || !category?.trim() || !size?.trim()) {
     throw new AppError('Nama, kategori, dan ukuran produk wajib diisi.', 400);
   }
@@ -49,9 +67,12 @@ export async function createProduct({ name, category, size, unit, price, costPri
     throw new AppError('Satuan produk tidak valid.', 400);
   }
 
+  const cleanDesc = cleanDescription(description);
+  const cleanPhoto = await assertProductPhoto(photoId);
+
   const [result] = await pool.query(
-    'INSERT INTO products (catalog_id, name, category, size, unit, price, cost_price, stock, low_stock_threshold, status) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)',
-    [catalogId ?? null, name.trim(), category.trim(), size.trim(), productUnit, price, Number(costPrice ?? 0), lowStockThreshold ?? 5, 'aktif'],
+    'INSERT INTO products (catalog_id, name, category, size, unit, price, cost_price, stock, low_stock_threshold, status, description, show_online, photo_id) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)',
+    [catalogId ?? null, name.trim(), category.trim(), size.trim(), productUnit, price, Number(costPrice ?? 0), lowStockThreshold ?? 5, 'aktif', cleanDesc, showOnline === false ? 0 : 1, cleanPhoto],
   );
 
   return getProductById(result.insertId);
@@ -72,6 +93,9 @@ export async function updateProduct(id, updates) {
     costPrice: updates.costPrice != null ? Number(updates.costPrice) : existing.costPrice,
     lowStockThreshold: updates.lowStockThreshold != null ? updates.lowStockThreshold : existing.lowStockThreshold,
     status: updates.status ?? existing.status,
+    description: updates.description !== undefined ? cleanDescription(updates.description) : existing.description || null,
+    showOnline: updates.showOnline !== undefined ? Boolean(updates.showOnline) : existing.showOnline,
+    photoId: updates.photoId !== undefined ? await assertProductPhoto(updates.photoId) : existing.photoId,
   };
 
   assertBottleSize(next.category, next.size);
@@ -92,9 +116,14 @@ export async function updateProduct(id, updates) {
   }
 
   await pool.query(
-    'UPDATE products SET name = ?, category = ?, size = ?, unit = ?, price = ?, cost_price = ?, low_stock_threshold = ?, status = ? WHERE id = ?',
-    [next.name, next.category, next.size, next.unit, next.price, next.costPrice, next.lowStockThreshold, next.status, id],
+    'UPDATE products SET name = ?, category = ?, size = ?, unit = ?, price = ?, cost_price = ?, low_stock_threshold = ?, status = ?, description = ?, show_online = ?, photo_id = ? WHERE id = ?',
+    [next.name, next.category, next.size, next.unit, next.price, next.costPrice, next.lowStockThreshold, next.status, next.description, next.showOnline ? 1 : 0, next.photoId, id],
   );
+
+  // foto lama yang sudah diganti/dilepas dihapus supaya tidak menumpuk di database
+  if (existing.photoId && existing.photoId !== next.photoId) {
+    await pool.query('DELETE FROM media WHERE id = ?', [existing.photoId]);
+  }
 
   return getProductById(id);
 }
@@ -107,6 +136,7 @@ export async function deleteProduct(id) {
 
   try {
     await pool.query('DELETE FROM products WHERE id = ?', [id]);
+    if (existing.photoId) await pool.query('DELETE FROM media WHERE id = ?', [existing.photoId]);
     return { deleted: true, product: null };
   } catch (err) {
     // Referenced by sale_items / stock_movements / daily_closing_items —

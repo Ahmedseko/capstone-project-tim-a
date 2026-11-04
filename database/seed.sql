@@ -13,8 +13,10 @@ INSERT INTO users (name, email, password_hash, role, is_active) VALUES
 -- SETTINGS
 -- Baris tunggal wajib ada agar halaman Pengaturan punya data awal.
 -- ==========================================================
-INSERT INTO settings (store_name, owner_name, address, phone, currency, default_low_stock_threshold) VALUES
-  ('Global Parfum Kutoarjo', 'Siti Aminah', 'Jl. Diponegoro No. 45, Kutoarjo, Purworejo', '0812-3456-7890', 'IDR', 5);
+INSERT INTO settings (store_name, owner_name, address, phone, currency, default_low_stock_threshold, email, maps_url, store_profile) VALUES
+  ('Global Parfum Kutoarjo', 'Siti Aminah', 'Jl. Sawunggaling No. 33, Semawungdaleman, Kutoarjo, Purworejo, Jawa Tengah', '082328329333', 'IDR', 5,
+   'globalparfum2009@gmail.com', 'https://maps.app.goo.gl/FFb4oqnBxSUnHfaZ9?g_st=ac',
+   'Global Parfum Kutoarjo adalah toko parfum di Kutoarjo, Purworejo. Kami melayani parfum racik per ml sesuai selera Anda, parfum botolan, dan perlengkapan parfum. Datang langsung ke toko atau pesan online, kami siap membantu memilih aroma yang cocok.');
 
 -- ==========================================================
 -- DATA CONTOH (hanya untuk instalasi baru)

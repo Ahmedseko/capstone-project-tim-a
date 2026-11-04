@@ -11,6 +11,9 @@ import closingRoutes from './routes/closingRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import publicRoutes from './routes/publicRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import mediaRoutes from './routes/mediaRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -34,6 +37,9 @@ app.use('/api/closing', closingRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/media', mediaRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
