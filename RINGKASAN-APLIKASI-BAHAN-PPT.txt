@@ -12,6 +12,7 @@ Diperbarui      : 14 Oktober 2026 (sesuai kondisi aplikasi saat ini)
 Nama Aplikasi   : Global Parfum Kutoarjo
 Studi Kasus     : UMKM Parfum "Global Parfum Kutoarjo"
 Repositori      : https://github.com/Ahmedseko/capstone-project-tim-a
+Demo online     : https://parfumkupurworejo.com (HTTPS)
 
 Judul Capstone:
 "Perancangan dan Implementasi Sistem Informasi Manajemen Penjualan
@@ -174,9 +175,11 @@ Keterbatasan yang ditemui (bahan untuk slide "Evaluasi"):
 - Git & GitHub                : version control & kolaborasi kode
 - npm                         : manajemen dependency/package
 - Deployment (VPS Ubuntu)     : Nginx (melayani frontend hasil build dan
-                                meneruskan /api ke backend), backend
-                                dijalankan sebagai layanan systemd,
-                                deploy lewat SSH
+                                meneruskan /api ke backend) dengan HTTPS
+                                Let's Encrypt yang diperbarui otomatis;
+                                backend dijalankan sebagai layanan systemd
+                                dengan sandbox (hanya loopback), deploy
+                                lewat SSH
 
 
 ====================================================================
@@ -486,7 +489,19 @@ sehingga mengubah harga di masa depan tidak mengubah laporan masa lalu.
 - Pembatalan transaksi tidak diizinkan setelah hari tersebut
   di-closing, dan tidak bisa dilakukan dua kali.
 - Rahasia (kata sandi database, kunci JWT) disimpan di file .env yang
-  tidak ikut ke repositori; hanya .env.example yang disertakan.
+  tidak ikut ke repositori; hanya .env.example yang disertakan. Rahasia
+  produksi diputar sebelum aplikasi dipublikasikan, dan server menolak
+  start dengan kunci JWT bawaan saat NODE_ENV=production.
+- Lapisan jaringan: HTTPS dengan HSTS, Content-Security-Policy, dan header
+  keamanan lain; HTTP dialihkan ke HTTPS; pembatasan percobaan login (10
+  per menit per IP); permintaan ber-Content-Encoding ditolak; port backend
+  tidak terbuka ke internet; CORS hanya untuk origin yang dikonfigurasi.
+- Prinsip hak minimum: akun database aplikasi hanya boleh membaca dan
+  menulis data (tidak boleh mengubah struktur tabel); layanan backend
+  berjalan dengan sandbox sistem (tanpa hak istimewa, tanpa akses jaringan
+  selain loopback).
+- Dependensi dan runtime dijaga mutakhir terhadap kerentanan yang diketahui
+  (Node.js dan body-parser ditambal sebelum aplikasi dipublikasikan).
 - Perubahan struktur database di server produksi selalu didahului
   backup (mysqldump).
 

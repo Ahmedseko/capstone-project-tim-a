@@ -2,6 +2,10 @@
 
 Sistem Informasi Manajemen Penjualan dan Stok UMKM Parfum — aplikasi web untuk mengelola produk, stok, penjualan, closing harian, dan laporan toko parfum.
 
+## Demo Online
+
+Aplikasi berjalan di **https://parfumkupurworejo.com** (HTTPS). Akun untuk penilai diberikan terpisah oleh tim; akun demo di bagian "Akun Demo" di bawah hanya berlaku pada instalasi lokal.
+
 ## Fitur Utama
 
 - **Racik parfum per ml**: parfum dijual per mililiter (mis. Baccarat Rp4.000/ml) dan dimasukkan ke botol pilihan pembeli. Harga = `isi (ml) × harga per ml + harga botol`. Ukuran botol kelipatan 5 ml (5–100) dan isi tidak boleh melebihi ukuran botol.
@@ -203,6 +207,13 @@ Login → Dashboard → Produk → Stok → Penjualan → Closing Harian → Lap
 
 - **Owner/Admin**: akses penuh (produk, katalog harga, stok, penjualan, pembatalan transaksi, closing, laporan, pengaturan, manajemen pengguna).
 - **Staff**: melihat produk, input stok masuk, mencatat penjualan dan mencetak struk, closing harian. Tidak memiliki akses ke Katalog Harga, Laporan, Pengaturan, dan tidak bisa membatalkan transaksi.
+
+## Catatan Produksi (Server)
+
+- Frontend hasil build dilayani Nginx lewat **HTTPS** (sertifikat Let's Encrypt, diperbarui otomatis); HTTP dialihkan ke HTTPS. Backend Node.js hanya mendengarkan lewat loopback dan diakses lewat Nginx.
+- Di `server/.env` produksi: `NODE_ENV=production`, `JWT_SECRET` acak yang panjang (server menolak start dengan nilai bawaan), dan `CORS_ORIGIN` hanya diisi kalau frontend dilayani dari origin lain.
+- Pengguna database aplikasi hanya diberi hak `SELECT, INSERT, UPDATE, DELETE`. Migrasi struktur tabel dijalankan dengan akun administrator database, bukan akun aplikasi.
+- Nginx membatasi percobaan login (10 per menit per IP) dan menolak permintaan ber-`Content-Encoding`.
 
 ## Memperbarui Database yang Sudah Berjalan
 
