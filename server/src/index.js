@@ -15,7 +15,12 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
-app.use(cors());
+app.disable('x-powered-by');
+
+// Frontend dan API satu origin (Nginx / proxy Vite), jadi CORS tidak perlu. Isi CORS_ORIGIN
+// (daftar dipisah koma) hanya kalau frontend dilayani dari origin lain; kosong = tanpa header CORS.
+const corsOrigins = (process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+app.use(cors({ origin: corsOrigins.length ? corsOrigins : false }));
 app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));

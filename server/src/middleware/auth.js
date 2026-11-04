@@ -1,7 +1,13 @@
 import jwt from 'jsonwebtoken';
 import { AppError } from '../utils/AppError.js';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-secret-change-me';
+const DEFAULT_SECRET = 'dev-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET ?? DEFAULT_SECRET;
+
+// Secret bawaan hanya untuk pengembangan lokal; di produksi server menolak berjalan dengannya.
+if (process.env.NODE_ENV === 'production' && JWT_SECRET === DEFAULT_SECRET) {
+  throw new Error('JWT_SECRET wajib diisi (bukan nilai bawaan) saat NODE_ENV=production.');
+}
 
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization;
