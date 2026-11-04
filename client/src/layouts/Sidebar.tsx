@@ -5,6 +5,7 @@ import {
   Boxes,
   Tags,
   PackageCheck,
+  Store,
   ShoppingCart,
   ClipboardCheck,
   BarChart3,
@@ -23,6 +24,7 @@ const navItems = [
   { to: '/stok', label: 'Stok', icon: Boxes },
   { to: '/penjualan', label: 'Penjualan', icon: ShoppingCart },
   { to: '/pesanan-online', label: 'Pesanan Online', icon: PackageCheck },
+  { to: '/etalase', label: 'Etalase Online', icon: Store },
   { to: '/closing', label: 'Closing Harian', icon: ClipboardCheck },
   { to: '/laporan', label: 'Laporan', icon: BarChart3, adminOnly: true },
 ];

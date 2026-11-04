@@ -15,6 +15,7 @@ import ClosingHarian from './pages/ClosingHarian';
 import Laporan from './pages/Laporan';
 import Pengaturan from './pages/Pengaturan';
 import PesananOnline from './pages/PesananOnline';
+import EtalaseOnline from './pages/EtalaseOnline';
 import { PublicLayout } from './components/public/PublicLayout';
 import Beranda from './pages/public/Beranda';
 import KatalogToko from './pages/public/Katalog';
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/stok" element={<Stok />} />
             <Route path="/penjualan" element={<Penjualan />} />
             <Route path="/pesanan-online" element={<PesananOnline />} />
+            <Route path="/etalase" element={<EtalaseOnline />} />
             <Route path="/closing" element={<ClosingHarian />} />
             <Route
               path="/laporan"

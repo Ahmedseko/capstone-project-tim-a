@@ -10,6 +10,7 @@ const titles: Record<string, string> = {
   '/produk': 'Produk',
   '/katalog-harga': 'Katalog Harga',
   '/pesanan-online': 'Pesanan Online',
+  '/etalase': 'Etalase Online',
   '/stok': 'Stok',
   '/penjualan': 'Penjualan',
   '/closing': 'Closing Harian',

@@ -32,6 +32,11 @@ export default function Beranda() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col gap-14">
+      {store?.announcement && (
+        <div role="status" className="-mb-6 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-text leading-relaxed">
+          {store.announcement}
+        </div>
+      )}
       <section className="grid lg:grid-cols-[1.1fr_1fr] gap-8 items-center">
         <div className="flex flex-col gap-5">
           <span className="text-xs font-bold tracking-[0.14em] text-accent-glow">PARFUM RACIK &middot; KUTOARJO</span>

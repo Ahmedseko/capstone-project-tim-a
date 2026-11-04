@@ -10,6 +10,7 @@ import {
   Settings,
   Tags,
   PackageCheck,
+  Store,
   LogOut,
   X,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ const navItems = [
   { to: '/stok', label: 'Stok', icon: Boxes },
   { to: '/penjualan', label: 'Penjualan', icon: ShoppingCart },
   { to: '/pesanan-online', label: 'Pesanan Online', icon: PackageCheck },
+  { to: '/etalase', label: 'Etalase Online', icon: Store },
   { to: '/closing', label: 'Closing Harian', icon: ClipboardCheck },
   { to: '/katalog-harga', label: 'Katalog', icon: Tags, adminOnly: true },
   { to: '/laporan', label: 'Laporan', icon: BarChart3, adminOnly: true },

@@ -17,6 +17,13 @@ export async function getCatalog() {
   const [rows] = await pool.query(
     "SELECT * FROM products WHERE status = 'aktif' AND (show_online = 1 OR category = 'Botol Kosong') ORDER BY name ASC",
   );
+  const [gallery] = await pool.query(
+    "SELECT id, product_id FROM media WHERE kind = 'produk' AND product_id IS NOT NULL AND deleted_at IS NULL ORDER BY sort_order ASC, id ASC",
+  );
+  const photosOf = (p) => {
+    const ids = gallery.filter((g) => g.product_id === p.id).map((g) => g.id);
+    return p.photo_id ? [p.photo_id, ...ids.filter((x) => x !== p.photo_id)] : ids;
+  };
   return {
     products: rows
       .filter((p) => !isBottle(p))
@@ -29,6 +36,7 @@ export async function getCatalog() {
         price: Number(p.price),
         available: p.stock > 0,
         photoId: p.photo_id,
+        photoIds: photosOf(p),
         description: p.description ?? '',
       })),
     bottles: rows

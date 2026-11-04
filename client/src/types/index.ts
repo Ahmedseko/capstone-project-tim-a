@@ -144,6 +144,7 @@ export interface Settings {
   openingHours: string;
   storeProfile: string;
   shopeeUrl: string;
+  announcement: string;
 }
 
 export interface DashboardSummary {
@@ -228,6 +229,7 @@ export interface PublicStore {
   openingHours: string;
   storeProfile: string;
   shopeeUrl: string;
+  announcement: string;
   photoIds: number[];
 }
 
@@ -240,6 +242,7 @@ export interface CatalogProduct {
   price: number;
   available: boolean;
   photoId: number | null;
+  photoIds: number[];
   description: string;
 }
 
@@ -264,4 +267,30 @@ export interface OrderLookup {
   fulfillment: Fulfillment;
   total: number;
   lines: { label: string; detail: string; quantity: number; subtotal: number }[];
+}
+
+// Menu Etalase Online
+export interface OnlineProduct {
+  id: number;
+  name: string;
+  category: string;
+  size: string;
+  unit: ProductUnit;
+  status: 'aktif' | 'nonaktif';
+  photoId: number | null;
+  photoIds: number[];
+  description: string;
+  showOnline: boolean;
+  updatedBy: string | null;
+  updatedAt: string | null;
+}
+
+export interface TrashPhoto {
+  id: number;
+  kind: 'produk' | 'toko';
+  productId: number | null;
+  productName: string | null;
+  deletedAt: string;
+  deletedBy: string | null;
+  expiresInDays: number;
 }

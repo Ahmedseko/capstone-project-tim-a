@@ -43,7 +43,7 @@ export function StorePhotosManager() {
   }
 
   async function remove(id: number) {
-    if (!window.confirm('Hapus foto ini dari halaman toko?')) return;
+    if (!window.confirm('Hapus foto ini dari halaman toko? Foto masuk Tong Sampah dan bisa dipulihkan 14 hari.')) return;
     try {
       await deleteImage(id);
       setIds((prev) => prev.filter((x) => x !== id));

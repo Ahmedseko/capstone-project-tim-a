@@ -37,6 +37,7 @@ export default function ProdukDetail() {
   const [ml, setMl] = useState(0);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [photoId, setPhotoId] = useState<number | null>(null);
 
   // pilihan awal: botol 30 ml (atau yang terdekat) terisi penuh
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function ProdukDetail() {
   }, [racik, bottles, bottleId]);
 
   const bottle = bottles.find((b) => b.id === bottleId) ?? null;
+  const activePhoto = product && photoId && product.photoIds.includes(photoId) ? photoId : (product?.photoIds[0] ?? product?.photoId ?? null);
 
   if (!product) {
     return (
@@ -88,8 +90,26 @@ export default function ProdukDetail() {
       </Link>
 
       <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-        <div className="rounded-2xl border border-border bg-surface overflow-hidden aspect-[4/3] md:aspect-square">
-          <ProductPhoto photoId={product.photoId} alt={product.name} />
+        <div className="flex flex-col gap-2.5">
+          <div className="rounded-2xl border border-border bg-surface overflow-hidden aspect-[4/3] md:aspect-square">
+            <ProductPhoto photoId={activePhoto} alt={product.name} />
+          </div>
+          {product.photoIds.length > 1 && (
+            <ul className="flex gap-2 overflow-x-auto" aria-label="Foto produk">
+              {product.photoIds.map((id, i) => (
+                <li key={id} className="shrink-0">
+                  <button
+                    onClick={() => setPhotoId(id)}
+                    aria-label={`Lihat foto ${i + 1}`}
+                    aria-pressed={id === activePhoto}
+                    className={clsx('w-16 h-16 rounded-lg overflow-hidden border-2 transition', id === activePhoto ? 'border-accent' : 'border-border opacity-70 hover:opacity-100')}
+                  >
+                    <ProductPhoto photoId={id} alt="" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="flex flex-col gap-5">

@@ -47,7 +47,12 @@ CREATE TABLE media (
   data MEDIUMBLOB NOT NULL,
   sort_order INT NOT NULL DEFAULT 0,
   created_by INT UNSIGNED NULL,
+  product_id INT UNSIGNED NULL,
+  deleted_at TIMESTAMP NULL,
+  deleted_by INT UNSIGNED NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_media_product (product_id),
+  INDEX idx_media_deleted (deleted_at),
   CONSTRAINT fk_media_user FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
@@ -69,9 +74,12 @@ CREATE TABLE products (
   photo_id INT UNSIGNED NULL,
   description TEXT NULL,
   show_online TINYINT(1) NOT NULL DEFAULT 1,
+  online_updated_by INT UNSIGNED NULL,
+  online_updated_at TIMESTAMP NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_products_photo FOREIGN KEY (photo_id) REFERENCES media (id) ON DELETE SET NULL,
+  CONSTRAINT fk_products_online_user FOREIGN KEY (online_updated_by) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_products_catalog FOREIGN KEY (catalog_id) REFERENCES price_catalog (id) ON DELETE SET NULL,
   CONSTRAINT chk_products_price CHECK (price >= 0),
   CONSTRAINT chk_products_stock CHECK (stock >= 0)
@@ -200,7 +208,8 @@ CREATE TABLE settings (
   maps_url VARCHAR(500) NULL,
   opening_hours VARCHAR(500) NULL,
   store_profile TEXT NULL,
-  shopee_url VARCHAR(500) NULL
+  shopee_url VARCHAR(500) NULL,
+  announcement VARCHAR(300) NULL
 ) ENGINE=InnoDB;
 
 -- ==========================================================

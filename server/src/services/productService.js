@@ -136,7 +136,7 @@ export async function deleteProduct(id) {
 
   try {
     await pool.query('DELETE FROM products WHERE id = ?', [id]);
-    if (existing.photoId) await pool.query('DELETE FROM media WHERE id = ?', [existing.photoId]);
+    await pool.query('DELETE FROM media WHERE product_id = ? OR id = ?', [id, existing.photoId ?? 0]);
     return { deleted: true, product: null };
   } catch (err) {
     // Referenced by sale_items / stock_movements / daily_closing_items —

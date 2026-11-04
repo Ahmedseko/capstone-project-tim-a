@@ -14,6 +14,7 @@ import userRoutes from './routes/userRoutes.js';
 import publicRoutes from './routes/publicRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import mediaRoutes from './routes/mediaRoutes.js';
+import etalaseRoutes from './routes/etalaseRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/etalase', etalaseRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -30,6 +30,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       { label: 'Tambah Stok', icon: Boxes, action: () => navigate('/stok?new=1') },
       { label: 'Catat Penjualan', icon: ShoppingCart, action: () => navigate('/penjualan') },
       { label: 'Pesanan Online', icon: ShoppingCart, action: () => navigate('/pesanan-online') },
+      { label: 'Etalase Online', icon: ShoppingCart, action: () => navigate('/etalase') },
       { label: 'Closing Hari Ini', icon: ClipboardCheck, action: () => navigate('/closing') },
     ];
     if (user?.role === 'admin') {

@@ -16,6 +16,7 @@ function mapSettings(row) {
     openingHours: row.opening_hours ?? '',
     storeProfile: row.store_profile ?? '',
     shopeeUrl: row.shopee_url ?? '',
+    announcement: row.announcement ?? '',
   };
 }
 
@@ -43,6 +44,7 @@ export async function getPublicStoreInfo() {
     openingHours: s.openingHours,
     storeProfile: s.storeProfile,
     shopeeUrl: s.shopeeUrl,
+    announcement: s.announcement,
     photoIds: await listStorePhotoIds(),
   };
 }
@@ -85,6 +87,7 @@ export async function updateSettings(input) {
     cleanText(input.openingHours, 500, 'Jam operasional'),
     cleanText(input.storeProfile, 2000, 'Profil toko'),
     cleanUrl(input.shopeeUrl, 'Link Shopee'),
+    cleanText(String(input.announcement ?? '').replace(/\s+/g, ' '), 300, 'Pengumuman'),
   ];
 
   const [rows] = await pool.query('SELECT id FROM settings LIMIT 1');
@@ -92,15 +95,15 @@ export async function updateSettings(input) {
   if (rows[0]) {
     await pool.query(
       `UPDATE settings SET store_name = ?, owner_name = ?, address = ?, phone = ?, currency = ?, default_low_stock_threshold = ?,
-         email = ?, maps_url = ?, opening_hours = ?, store_profile = ?, shopee_url = ?
+         email = ?, maps_url = ?, opening_hours = ?, store_profile = ?, shopee_url = ?, announcement = ?
        WHERE id = ?`,
       [input.storeName, input.ownerName, input.address, phone, input.currency, input.defaultLowStockThreshold, ...extra, rows[0].id],
     );
   } else {
     await pool.query(
       `INSERT INTO settings (store_name, owner_name, address, phone, currency, default_low_stock_threshold,
-         email, maps_url, opening_hours, store_profile, shopee_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         email, maps_url, opening_hours, store_profile, shopee_url, announcement)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [input.storeName, input.ownerName, input.address, phone, input.currency, input.defaultLowStockThreshold, ...extra],
     );
   }
