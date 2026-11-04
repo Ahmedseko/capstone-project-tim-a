@@ -1,4 +1,4 @@
-import { Clock, Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
+import { Clock, MapPin, MessageCircle, Navigation } from 'lucide-react';
 import type { PublicStore } from '../../types';
 import { waLink } from '../../utils/storefront';
 
@@ -30,7 +30,7 @@ export function StoreInfoCard({ store, heading = 'Kunjungi Toko' }: { store: Pub
             </div>
             {store.phone && (
               <div className="flex gap-2">
-                <Phone size={16} className="shrink-0 mt-0.5 text-accent-glow" aria-hidden="true" />
+                <img src="/icons/whatsapp.png" alt="" width={16} height={16} className="shrink-0 mt-0.5" />
                 <div>
                   <dt className="sr-only">Telepon / WhatsApp</dt>
                   <dd>{store.phone}</dd>
@@ -39,7 +39,7 @@ export function StoreInfoCard({ store, heading = 'Kunjungi Toko' }: { store: Pub
             )}
             {store.email && (
               <div className="flex gap-2">
-                <Mail size={16} className="shrink-0 mt-0.5 text-accent-glow" aria-hidden="true" />
+                <img src="/icons/gmail.png" alt="" width={18} height={14} className="shrink-0 mt-1" />
                 <div>
                   <dt className="sr-only">Email</dt>
                   <dd>

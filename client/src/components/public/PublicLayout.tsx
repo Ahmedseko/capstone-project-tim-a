@@ -84,17 +84,31 @@ export function PublicLayout() {
             {store?.address && <p className="leading-relaxed">{store.address}</p>}
             {store?.openingHours && <p className="whitespace-pre-line">{store.openingHours}</p>}
           </div>
-          <div className="flex flex-col gap-1.5 sm:items-end sm:text-right">
-            {store?.phone && (
-              <a href={waLink(store.whatsapp)} target="_blank" rel="noopener noreferrer" className="hover:text-text">
-                WhatsApp {store.phone}
-              </a>
-            )}
-            {store?.email && (
-              <a href={`mailto:${store.email}`} className="hover:text-text break-all">
-                {store.email}
-              </a>
-            )}
+          <div className="flex flex-col gap-3 sm:items-end">
+            <div className="flex gap-3">
+              {store?.whatsapp && (
+                <a
+                  href={waLink(store.whatsapp)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Chat WhatsApp ${store.phone}`}
+                  title={`WhatsApp ${store.phone}`}
+                  className="w-11 h-11 rounded-xl border border-border bg-surface flex items-center justify-center hover:bg-white/[0.07] transition"
+                >
+                  <img src="/icons/whatsapp.png" alt="" width={26} height={26} />
+                </a>
+              )}
+              {store?.email && (
+                <a
+                  href={`mailto:${store.email}`}
+                  aria-label={`Kirim email ke ${store.email}`}
+                  title={store.email}
+                  className="w-11 h-11 rounded-xl border border-border bg-surface flex items-center justify-center hover:bg-white/[0.07] transition"
+                >
+                  <img src="/icons/gmail.png" alt="" width={28} height={21} />
+                </a>
+              )}
+            </div>
             <Link to={user ? '/dashboard' : '/login'} className="text-xs text-text-faint hover:text-text-muted mt-2">
               {user ? 'Buka dashboard' : 'Masuk admin / staff'}
             </Link>
