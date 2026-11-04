@@ -20,7 +20,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
 
   return (
     <article className="rounded-xl border border-border bg-surface overflow-hidden flex flex-col">
-      <Link to={`/katalog/${product.id}`} className="block aspect-[4/3] bg-surface-elevated" aria-label={`Lihat detail ${product.name}`}>
+      <Link to={`/katalog/${product.id}`} className="block aspect-square bg-surface-elevated" aria-label={`Lihat detail ${product.name}`}>
         <ProductPhoto photoId={product.photoId} alt={product.name} />
       </Link>
       <div className="p-3.5 flex flex-col gap-2 flex-1">

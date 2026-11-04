@@ -91,7 +91,7 @@ export default function ProdukDetail() {
 
       <div className="grid md:grid-cols-2 gap-6 md:gap-10">
         <div className="flex flex-col gap-2.5">
-          <div className="rounded-2xl border border-border bg-surface overflow-hidden aspect-[4/3] md:aspect-square">
+          <div className="rounded-2xl border border-border bg-surface overflow-hidden aspect-square">
             <ProductPhoto photoId={activePhoto} alt={product.name} />
           </div>
           {product.photoIds.length > 1 && (
