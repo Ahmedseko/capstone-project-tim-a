@@ -23,8 +23,10 @@ Deskripsi Singkat:
 Sistem Informasi Manajemen Penjualan dan Stok untuk UMKM Parfum —
 aplikasi web untuk mengelola produk, katalog harga, stok, transaksi
 penjualan (kasir racik parfum per ml), struk, closing harian dengan
-rekonsiliasi kas dan stok, laporan usaha termasuk laba, serta manajemen
-pengguna, secara terpusat dan real-time menggantikan pencatatan manual.
+rekonsiliasi kas dan stok, laporan usaha termasuk laba, toko online untuk
+konsumen (katalog, keranjang, checkout, cek pesanan) dengan pengelolaan
+pesanan online oleh admin/staf, serta manajemen pengguna, secara terpusat
+dan real-time menggantikan pencatatan manual.
 
 
 ====================================================================
@@ -117,6 +119,11 @@ Tahapan dan hasil nyata pada proyek ini:
      * Perbaikan dari hasil uji coba (judul halaman, label
        pembatalan, logout otomatis saat sesi habis, batas stok ml,
        grafik).
+     * Toko online untuk konsumen: halaman publik (profil toko, foto,
+       lokasi dan Google Maps, katalog, keranjang, checkout ambil di
+       toko/dikirim, cek pesanan), pesanan online yang masuk ke menu
+       admin/staf, foto produk, dan penyesuaian stok (stok berkurang
+       saat pesanan dikonfirmasi).
      Setiap perubahan melalui ulang analisis singkat, perancangan,
      implementasi, dan pengujian sebelum diterapkan.
 
@@ -198,14 +205,17 @@ Pola Arsitektur : Client-Server, dengan REST API sebagai penghubung
         |  Endpoint: /api/auth, /api/products, /api/catalog,
         |            /api/stock, /api/sales (+ /:id/cancel),
         |            /api/closing, /api/reports,
-        |            /api/settings (+ /store), /api/users
+        |            /api/settings (+ /store), /api/users,
+        |            /api/orders (pesanan online), /api/media (foto),
+        |            /api/public (toko, katalog, foto, pesan, cek)
         v
     [ Database ]
         |
         |  MySQL 8.0
         v
-    (users, price_catalog, products, stock_movements, sales,
-     sale_items, daily_closings, daily_closing_items, settings)
+    (users, price_catalog, media, products, stock_movements, sales,
+     sale_items, daily_closings, daily_closing_items, settings,
+     online_orders, online_order_lines)
 
 Alur Autentikasi:
 1. User login (email + password) -> backend verifikasi ke tabel users
@@ -243,10 +253,18 @@ Alur Data Penting (contoh: satu penjualan racik parfum):
 
   Path            Halaman              Akses
   --------------  -------------------  ------------------------------
+  /               Beranda toko         Publik (konsumen)
+  /katalog        Katalog produk       Publik (konsumen)
+  /katalog/:id    Detail produk        Publik (konsumen)
+  /keranjang      Keranjang            Publik (konsumen)
+  /checkout       Checkout             Publik (konsumen)
+  /pesanan-berhasil Pesanan terkirim   Publik (konsumen)
+  /cek-pesanan    Cek pesanan          Publik (konsumen)
   /login          Login                Publik (belum login)
   /dashboard      Dashboard            Admin & Staff
   /produk         Manajemen Produk     Admin & Staff (edit: admin saja)
-  /katalog        Katalog Harga        Admin saja
+  /katalog-harga  Katalog Harga        Admin saja
+  /pesanan-online Pesanan Online       Admin & Staff
   /stok           Manajemen Stok       Admin & Staff
   /penjualan      Penjualan (Kasir)    Admin & Staff
   /closing        Closing Harian       Admin & Staff
@@ -371,10 +389,51 @@ H. LAPORAN (Admin saja)
    - Tabel transaksi dengan kolom laba per transaksi.
    - Ekspor laporan ke Excel (.xlsx); laporan siap cetak.
 
-I. PENGATURAN & MANAJEMEN PENGGUNA (Admin saja)
-   - Identitas toko: nama toko, pemilik, alamat, telepon, mata uang,
-     ambang batas stok menipis default. Nama/alamat/telepon dipakai
-     pada struk.
+I. TOKO ONLINE UNTUK KONSUMEN (halaman publik, tanpa login)
+   - Beranda: nama dan profil toko, foto toko, jam operasional, alamat,
+     nomor WhatsApp, email, tombol "Chat WhatsApp", kartu "Kunjungi
+     Toko" dengan tombol "Buka Google Maps" dan pratinjau peta, serta
+     tautan ke Shopee (jika diisi admin).
+   - Katalog: foto, nama, jenis, ukuran, harga, status tersedia/habis,
+     pencarian, filter kategori, urutan harga, tombol lihat detail dan
+     tambah ke keranjang.
+   - Detail produk: untuk parfum racik pelanggan memilih ukuran botol
+     dan isi (ml) dengan harga yang terhitung langsung; produk jadi
+     cukup memilih jumlah.
+   - Keranjang disimpan di browser (tanpa akun); harga selalu diambil
+     dari katalog terbaru.
+   - Checkout: nama, nomor WhatsApp, catatan, dan metode "ambil di
+     toko" (menampilkan alamat dan tombol Google Maps) atau "dikirim"
+     (alamat wajib diisi).
+   - Cek Pesanan: nomor pesanan + nomor WhatsApp -> status terbaru,
+     tahapan, produk, total, dan metode.
+   - Harga, ketersediaan, dan total selalu dihitung ulang di server;
+     data yang dikirim browser hanya pilihan pelanggan.
+
+J. PESANAN ONLINE (Admin & Staff)
+   - Daftar pesanan dengan filter status dan pencarian, lencana jumlah
+     pesanan baru di menu, dan penyegaran otomatis.
+   - Detail pesanan: data pelanggan, alamat/metode, catatan, item, total,
+     dan tombol "Hubungi via WhatsApp" yang membuka pesan otomatis:
+     "Halo Kak [Nama], pesanan [Nomor] dari Global Parfum Kutoarjo sudah
+     kami terima. Kami ingin mengonfirmasi pesanan Kakak."
+   - Status: Baru -> Dikonfirmasi -> Diproses -> Siap Diambil/Dikirim ->
+     Selesai; tambahan status Batal (dengan alasan).
+   - Stok TIDAK berkurang saat pesanan masuk. Stok berkurang saat admin/
+     staf menekan "Konfirmasi Pesanan" (pesanan dicatat sebagai penjualan
+     dengan harga saat pelanggan memesan, sehingga laporan, closing, dan
+     laba ikut). Jika dibatalkan setelah dikonfirmasi, stok dikembalikan
+     otomatis.
+   - Ringkasan di dashboard: pesanan baru, sedang diproses, selesai,
+     penjualan hari ini dan bulan ini, produk terlaris, stok menipis.
+
+K. PENGATURAN & MANAJEMEN PENGGUNA (Admin saja)
+   - Identitas toko: nama toko, pemilik, alamat, telepon/WhatsApp,
+     email, link Google Maps, link Shopee, jam operasional, profil
+     singkat, mata uang, ambang batas stok menipis default. Dipakai pada
+     struk dan halaman toko online.
+   - Foto toko (hingga 12) dan foto/deskripsi produk; produk dapat
+     disembunyikan dari toko online.
    - Manajemen pengguna: tambah user baru, ubah role (admin/staff),
      aktifkan/nonaktifkan akun.
    - Admin tidak bisa menonaktifkan akunnya sendiri.
@@ -398,6 +457,12 @@ I. PENGATURAN & MANAJEMEN PENGGUNA (Admin saja)
   Ekspor Laporan Excel           Ya                 Tidak
   Pengaturan Toko                Ya                 Tidak
   Manajemen Pengguna             Ya                 Tidak
+  Pesanan Online (lihat,
+  konfirmasi, ubah status,
+  hubungi via WhatsApp)          Ya                 Ya
+  Foto produk & foto toko        Ya                 Tidak
+  Halaman toko, keranjang,
+  checkout, cek pesanan          Publik (tanpa login)
 
 Harga modal dan laba bersifat rahasia pemilik: server tidak mengirim
 data modal dan laba ke akun Staff, bukan sekadar disembunyikan di
@@ -405,7 +470,7 @@ tampilan.
 
 
 ====================================================================
-9. STRUKTUR DATABASE (9 TABEL)
+9. STRUKTUR DATABASE (12 TABEL)
 ====================================================================
 
 1. users
@@ -455,9 +520,30 @@ tampilan.
 
 9. settings  (identitas & konfigurasi toko)
    id, store_name, owner_name, address, phone, currency,
-   default_low_stock_threshold
+   default_low_stock_threshold, email, maps_url, opening_hours,
+   store_profile, shopee_url
 
-Relasi utama: price_catalog <-1:N- products, products <-1:N-
+10. media  (foto produk dan foto toko, disimpan sebagai BLOB)
+   id, kind (produk/toko), mime, size, data, sort_order, created_by
+
+11. online_orders  (pesanan konsumen)
+   id, order_number (unik, ORD-YYYYMMDD-NNN), customer_name,
+   customer_phone, fulfillment (ambil/kirim), address, note, total,
+   status (baru/dikonfirmasi/diproses/siap/selesai/batal),
+   sale_id (FK->sales, terisi saat dikonfirmasi), cancel_reason,
+   confirmed_by, confirmed_at, created_at
+
+12. online_order_lines  (baris pesanan seperti yang dilihat pelanggan)
+   id, order_id (FK->online_orders), kind (racik/produk), label,
+   detail, quantity, unit_total, subtotal, components (JSON bahan stok
+   per unit: produk, jumlah, harga saat memesan)
+
+Tabel products juga memiliki photo_id (FK->media), description, dan
+show_online (tampil/tidak di toko online).
+
+Relasi utama: online_orders <-1:N- online_order_lines, online_orders
+-N:1-> sales (saat dikonfirmasi), media <-1:N- products (foto),
+price_catalog <-1:N- products, products <-1:N-
 stock_movements, products <-1:N- sale_items, sales <-1:N- sale_items,
 daily_closings <-1:N- daily_closing_items, users <-1:N-
 stock_movements/sales/daily_closings (siapa yang input/membatalkan).
@@ -502,6 +588,20 @@ sehingga mengubah harga di masa depan tidak mengubah laporan masa lalu.
   selain loopback).
 - Dependensi dan runtime dijaga mutakhir terhadap kerentanan yang diketahui
   (Node.js dan body-parser ditambal sebelum aplikasi dipublikasikan).
+- Keamanan halaman publik (tanpa login): katalog publik hanya memuat
+  data aman (tanpa modal dan tanpa angka stok); pesanan divalidasi
+  penuh di server (harga, stok, ukuran, jumlah dihitung ulang, input
+  dari browser tidak dipercaya); pembatasan laju di Nginx dan per nomor
+  WhatsApp; kolom jebakan untuk bot; cek pesanan wajib nomor pesanan
+  DAN nomor WhatsApp yang cocok, dengan jawaban sama untuk salah satu
+  yang keliru; alamat dan nomor pelanggan tidak dikembalikan oleh
+  endpoint publik; tautan (Maps, Shopee) harus https; foto dicek dari
+  isinya dan tidak boleh SVG; Content-Security-Policy hanya mengizinkan
+  peta Google sebagai bingkai tertanam.
+- Konsistensi stok pesanan online: konfirmasi dan pembatalan berjalan
+  dalam satu transaksi database bersama mesin penjualan, dengan harga
+  saat pelanggan memesan; konfirmasi gagal utuh (tanpa mengubah apa pun)
+  kalau stok tidak cukup.
 - Perubahan struktur database di server produksi selalu didahului
   backup (mysqldump).
 
@@ -519,7 +619,18 @@ sehingga mengubah harga di masa depan tidak mengubah laporan masa lalu.
   transaksi lama tetap, transaksi tanpa modal, rekonsiliasi kas
   (selisih), serta penolakan closing ganda dan pembatalan setelah
   closing. Instalasi dari nol dengan schema.sql + seed.sql juga
-  diuji. (Skrip uji tidak disertakan di repositori.)
+  diuji.
+- Pengujian toko online (25 skenario, lewat HTTP ke server asli dan
+  MySQL asli dengan hak akses minimum): katalog publik tanpa data
+  rahasia, validasi pesanan (honeypot, nomor WhatsApp, alamat, jumlah,
+  isi melebihi botol), harga dihitung server, stok tidak berkurang saat
+  memesan, cek pesanan (cocok/salah), batas pesanan per nomor, konfirmasi
+  oleh staf (stok berkurang, tercipta penjualan), status berurutan,
+  pembatalan sebelum dan sesudah konfirmasi (stok kembali), harga saat
+  memesan dihormati, konfirmasi gagal bila stok habis, foto, dan
+  pengaturan toko. (Skrip uji tidak disertakan di repositori.)
+- Tampilan responsif diuji di lebar 320-1366 px pada semua halaman
+  (tanpa elemen yang meluap).
 
 
 ====================================================================
@@ -561,8 +672,10 @@ batalkan transaksi -> Closing Harian (stok & kas) -> Laporan (laba).
 14. POTENSI PENGEMBANGAN LANJUTAN (untuk slide "Kesimpulan & Saran")
 ====================================================================
 
-- Validasi kapasitas botol (isi tidak melebihi ukuran) juga di sisi
-  server, bukan hanya di tampilan.
+- Validasi kapasitas botol pada kasir (halaman admin) juga di sisi
+  server; pada toko online validasi ini sudah dilakukan di server.
+- Notifikasi otomatis ke admin saat ada pesanan baru (WhatsApp/email),
+  ongkos kirim otomatis, dan pembayaran online.
 - Kolom modal dan laba pada ekspor Excel; laporan per varian (ml
   terjual, omzet, laba).
 - Fitur ganti/reset kata sandi pengguna dari aplikasi.

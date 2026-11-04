@@ -4,7 +4,12 @@ Sistem Informasi Manajemen Penjualan dan Stok UMKM Parfum — aplikasi web untuk
 
 ## Demo Online
 
-Aplikasi berjalan di **https://parfumkupurworejo.com** (HTTPS). Akun untuk penilai diberikan terpisah oleh tim; akun demo di bagian "Akun Demo" di bawah hanya berlaku pada instalasi lokal.
+**https://parfumkupurworejo.com** (HTTPS):
+
+- **Halaman untuk konsumen** (tanpa login): `/` beranda toko, `/katalog`, `/keranjang`, `/checkout`, `/cek-pesanan`.
+- **Halaman admin/staff**: `/login`, lalu `/dashboard`, `/pesanan-online`, dan seterusnya.
+
+Akun untuk penilai diberikan terpisah oleh tim; akun demo di bagian "Akun Demo" di bawah hanya berlaku pada instalasi lokal.
 
 ## Fitur Utama
 
@@ -14,6 +19,9 @@ Aplikasi berjalan di **https://parfumkupurworejo.com** (HTTPS). Akun untuk penil
 - **Penjualan**: diskon (Rp/%), catatan pembeli, uang diterima + kembalian, **struk** yang bisa dicetak ke printer apa pun atau disimpan sebagai PDF, dan **pembatalan transaksi** oleh admin (stok dikembalikan, keluar dari laporan).
 - **Harga modal & laba** (admin): modal per ml / per botol diisi di Katalog atau Produk. Modal disalin ke tiap transaksi, jadi laba lama tidak berubah saat modal berganti. Laporan dan Dashboard menampilkan laba kotor; transaksi tanpa modal dihitung terpisah, bukan dianggap untung penuh. Staff tidak melihat modal maupun laba.
 - **Closing harian** dengan **rekonsiliasi kas**: penjualan per metode bayar (tunai/QRIS/transfer), uang tunai seharusnya di laci (modal awal + penjualan tunai) dibanding hasil hitung, plus rekonsiliasi stok.
+- **Toko online untuk konsumen**: beranda toko (profil, foto, jam operasional, lokasi dengan tombol Google Maps dan WhatsApp), katalog dengan pencarian/filter, detail produk (racik per ml atau produk jadi), keranjang, checkout (ambil di toko atau dikirim), dan **Cek Pesanan** memakai nomor pesanan + nomor WhatsApp. Responsif untuk ponsel dan tablet.
+- **Pesanan Online (admin & staff)**: pesanan konsumen tersimpan di database dan muncul di menu Pesanan Online (dengan lencana pesanan baru). Alur status: Baru → Dikonfirmasi → Diproses → Siap Diambil/Dikirim → Selesai, atau Batal. **Stok tidak berkurang saat pelanggan memesan**; stok berkurang saat admin/staf menekan *Konfirmasi Pesanan* (dicatat sebagai penjualan, sehingga laporan, closing, dan laba ikut). Pembatalan setelah konfirmasi mengembalikan stok otomatis. Tombol *Hubungi via WhatsApp* membuka pesan otomatis ke pelanggan.
+- **Foto produk dan foto toko** (admin): disimpan di database, diperkecil otomatis di browser sebelum diunggah.
 - **Laporan** (dashboard, grafik, ekspor Excel), serta pengaturan toko dan pengguna.
 
 ## Struktur Proyek
@@ -198,6 +206,9 @@ Kalau sudah selesai pakai:
 5. Isi **harga modal** di Katalog Harga (data contoh sudah terisi), lalu lihat **Laporan** (Laba Kotor) dan **Dashboard** (Laba Hari Ini).
 6. Buka **Closing Harian**: isi modal awal laci dan uang hasil hitung, lihat selisih kas, lalu tutup hari.
 7. Lihat juga **Stok** (riwayat pergerakan stok).
+8. **Sisi konsumen**: buka `/` tanpa login → katalog → pilih parfum, ukuran botol, dan isi → keranjang → checkout (ambil di toko / dikirim) → kirim pesanan. Catat nomor pesanannya, lalu coba **Cek Pesanan**.
+9. Kembali sebagai Admin/Staff: buka **Pesanan Online**, klik pesanan tadi → **Konfirmasi pesanan** (stok berkurang, tercatat sebagai penjualan) → ubah status sampai Selesai. Coba juga **Hubungi via WhatsApp** dan **Batalkan** (stok kembali).
+10. Di **Pengaturan** (admin): ubah info toko, jam operasional, link Google Maps/Shopee, dan unggah foto toko. Di **Produk**: unggah foto dan deskripsi produk.
 
 ## Alur Utama
 
@@ -205,24 +216,27 @@ Login → Dashboard → Produk → Stok → Penjualan → Closing Harian → Lap
 
 ## Catatan Peran
 
-- **Owner/Admin**: akses penuh (produk, katalog harga, stok, penjualan, pembatalan transaksi, closing, laporan, pengaturan, manajemen pengguna).
-- **Staff**: melihat produk, input stok masuk, mencatat penjualan dan mencetak struk, closing harian. Tidak memiliki akses ke Katalog Harga, Laporan, Pengaturan, dan tidak bisa membatalkan transaksi.
+- **Owner/Admin**: akses penuh (produk, foto produk, katalog harga, stok, penjualan, pesanan online, pembatalan transaksi, closing, laporan, pengaturan toko dan foto toko, manajemen pengguna).
+- **Staff**: melihat produk dan stok, input stok masuk, mencatat penjualan dan mencetak struk, **melihat/mengonfirmasi/mengubah status pesanan online dan menghubungi pelanggan lewat WhatsApp**, closing harian. Tidak memiliki akses ke Katalog Harga, Laporan, Pengaturan, pengelolaan foto/akun, dan tidak bisa membatalkan transaksi kasir.
+- **Konsumen** (tanpa akun): hanya halaman publik dan Cek Pesanan; data publik tidak memuat modal, stok, atau data pelanggan lain.
 
 ## Catatan Produksi (Server)
 
 - Frontend hasil build dilayani Nginx lewat **HTTPS** (sertifikat Let's Encrypt, diperbarui otomatis); HTTP dialihkan ke HTTPS. Backend Node.js hanya mendengarkan lewat loopback dan diakses lewat Nginx.
 - Di `server/.env` produksi: `NODE_ENV=production`, `JWT_SECRET` acak yang panjang (server menolak start dengan nilai bawaan), dan `CORS_ORIGIN` hanya diisi kalau frontend dilayani dari origin lain.
 - Pengguna database aplikasi hanya diberi hak `SELECT, INSERT, UPDATE, DELETE`. Migrasi struktur tabel dijalankan dengan akun administrator database, bukan akun aplikasi.
-- Nginx membatasi percobaan login (10 per menit per IP) dan menolak permintaan ber-`Content-Encoding`.
+- Nginx membatasi percobaan login (10 per menit per IP), pembuatan pesanan publik (6 per menit per IP), dan cek pesanan (20 per menit per IP), serta menolak permintaan ber-`Content-Encoding`. Aplikasi juga membatasi 5 pesanan per jam per nomor WhatsApp dan memakai kolom jebakan untuk bot.
+- Foto disimpan di database (layanan backend tidak boleh menulis file). Tipe foto dicek dari isinya (JPEG/PNG/WebP, maks 2 MB), dan SVG tidak diterima.
 
 ## Memperbarui Database yang Sudah Berjalan
 
-Instalasi baru otomatis memakai `database/schema.sql` terbaru. Kalau kamu **sudah punya database lama** dengan data yang ingin dipertahankan, jalankan migrasi di `database/migrations/` **berurutan, masing-masing sekali** (`001_price_catalog.sql`, `002_sales_upgrade.sql`, lalu `003_cash_and_cost.sql`). Contoh dengan Docker:
+Instalasi baru otomatis memakai `database/schema.sql` terbaru. Kalau kamu **sudah punya database lama** dengan data yang ingin dipertahankan, jalankan migrasi di `database/migrations/` **berurutan, masing-masing sekali** (`001_price_catalog.sql` sampai `004_online_store.sql`). Contoh dengan Docker:
 
 ```bash
 docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/001_price_catalog.sql
 docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/002_sales_upgrade.sql
 docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/003_cash_and_cost.sql
+docker exec -i gpk-mysql mysql -uroot -proot < database/migrations/004_online_store.sql
 ```
 
 (Di PowerShell tanda `<` tidak didukung — gunakan Git Bash, atau `Get-Content file.sql | docker exec -i gpk-mysql mysql -uroot -proot`.)
