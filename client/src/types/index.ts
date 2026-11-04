@@ -34,6 +34,9 @@ export interface Product {
   stock: number;
   lowStockThreshold: number;
   status: ProductStatus;
+  photoId: number | null;
+  description: string;
+  showOnline: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -136,12 +139,20 @@ export interface Settings {
   phone: string;
   currency: string;
   defaultLowStockThreshold: number;
+  email: string;
+  mapsUrl: string;
+  openingHours: string;
+  storeProfile: string;
+  shopeeUrl: string;
 }
 
 export interface DashboardSummary {
   salesToday: number;
   revenueToday: number;
   itemsSoldToday: number;
+  salesMonth: number;
+  revenueMonth: number;
+  onlineOrders: OrderSummary;
   profitToday: number | null; // null untuk staff
   salesWithoutCostToday: number | null;
   lowStockCount: number;
@@ -164,4 +175,93 @@ export interface ReportSummary {
 
 export interface ApiError {
   message: string;
+}
+
+// ---------------------------------------------------------------- toko online (halaman publik + pesanan)
+export type OrderStatus = 'baru' | 'dikonfirmasi' | 'diproses' | 'siap' | 'selesai' | 'batal';
+export type Fulfillment = 'ambil' | 'kirim';
+
+export interface OrderLine {
+  kind: 'racik' | 'produk';
+  label: string;
+  detail: string;
+  quantity: number;
+  unitTotal: number;
+  subtotal: number;
+}
+
+export interface OnlineOrder {
+  id: number;
+  orderNumber: string;
+  customerName: string;
+  customerPhone: string;
+  fulfillment: Fulfillment;
+  address: string | null;
+  note: string | null;
+  total: number;
+  status: OrderStatus;
+  saleId: number | null;
+  saleNumber: string | null;
+  cancelReason: string | null;
+  confirmedBy: string | null;
+  confirmedAt: string | null;
+  createdAt: string;
+  lines: OrderLine[];
+}
+
+export interface OrderSummary {
+  baru: number;
+  diproses: number;
+  selesai: number;
+  selesaiBulanIni: number;
+  batal: number;
+}
+
+export interface PublicStore {
+  storeName: string;
+  address: string;
+  phone: string;
+  whatsapp: string | null;
+  email: string;
+  mapsUrl: string;
+  mapsEmbedUrl: string;
+  openingHours: string;
+  storeProfile: string;
+  shopeeUrl: string;
+  photoIds: number[];
+}
+
+export interface CatalogProduct {
+  id: number;
+  name: string;
+  category: string;
+  size: string;
+  unit: ProductUnit;
+  price: number;
+  available: boolean;
+  photoId: number | null;
+  description: string;
+}
+
+export interface CatalogBottle {
+  id: number;
+  name: string;
+  size: string;
+  capacity: number;
+  price: number;
+  available: boolean;
+}
+
+export interface PublicCatalog {
+  products: CatalogProduct[];
+  bottles: CatalogBottle[];
+}
+
+export interface OrderLookup {
+  orderNumber: string;
+  createdAt: string;
+  status: OrderStatus;
+  fulfillment: Fulfillment;
+  total: number;
+  lines: { label: string; detail: string; quantity: number; subtotal: number }[];
 }

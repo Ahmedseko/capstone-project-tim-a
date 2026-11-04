@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Search, Pencil, Trash2, PackageX } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, PackageX, ImagePlus } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Input, Select, FormField } from '../components/ui/Input';
+import { Input, Select, FormField, Textarea } from '../components/ui/Input';
 import { SizeField } from '../components/SizeField';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -15,6 +15,9 @@ import type { Product, ProductUnit } from '../types';
 import { formatCurrency } from '../utils/format';
 import { CATEGORIES, CATEGORY_DEFAULTS, UNITS } from '../utils/productOptions';
 import { listCatalog } from '../services/catalog';
+import { deleteImage, uploadImage } from '../services/media';
+import { mediaUrl } from '../services/public';
+import { resizeImage } from '../utils/image';
 import type { CatalogItem } from '../types';
 
 const emptyForm: ProductInput = {
@@ -25,6 +28,9 @@ const emptyForm: ProductInput = {
   price: 0,
   costPrice: 0,
   lowStockThreshold: 5,
+  description: '',
+  showOnline: true,
+  photoId: null,
 };
 
 export default function Produk() {
@@ -42,6 +48,9 @@ export default function Produk() {
   const [form, setForm] = useState<ProductInput>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [pendingPhoto, setPendingPhoto] = useState<number | null>(null); // foto baru yang belum disimpan ke produk
+  const fileInput = useRef<HTMLInputElement>(null);
 
   function load() {
     setLoading(true);
@@ -101,8 +110,43 @@ export default function Produk() {
       costPrice: product.costPrice ?? 0,
       lowStockThreshold: product.lowStockThreshold,
       catalogId: product.catalogId,
+      description: product.description ?? '',
+      showOnline: product.showOnline,
+      photoId: product.photoId,
     });
+    setPendingPhoto(null);
     setModalOpen(true);
+  }
+
+  async function onPickPhoto(file?: File) {
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      const { id } = await uploadImage(await resizeImage(file), 'produk');
+      if (pendingPhoto) deleteImage(pendingPhoto).catch(() => undefined); // unggahan sebelumnya yang tidak jadi dipakai
+      setPendingPhoto(id);
+      setForm((f) => ({ ...f, photoId: id }));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal mengunggah foto.', 'error');
+    } finally {
+      setPhotoBusy(false);
+      if (fileInput.current) fileInput.current.value = '';
+    }
+  }
+
+  // Hanya melepas foto dari form; foto lama baru terhapus di server saat produk disimpan.
+  function removePhoto() {
+    if (pendingPhoto) {
+      deleteImage(pendingPhoto).catch(() => undefined);
+      setPendingPhoto(null);
+    }
+    setForm((f) => ({ ...f, photoId: null }));
+  }
+
+  function closeModal() {
+    if (pendingPhoto) deleteImage(pendingPhoto).catch(() => undefined); // dibatalkan: jangan tinggalkan foto yatim
+    setPendingPhoto(null);
+    setModalOpen(false);
   }
 
   async function handleSubmit() {
@@ -116,10 +160,11 @@ export default function Produk() {
         await createProduct(form);
         showToast('Produk berhasil ditambahkan.');
       }
+      setPendingPhoto(null);
       setModalOpen(false);
       load();
-    } catch {
-      showToast('Gagal menyimpan produk.', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal menyimpan produk.', 'error');
     } finally {
       setSaving(false);
     }
@@ -201,6 +246,7 @@ export default function Produk() {
               {filtered.map((p) => (
                 <tr key={p.id} className="hover:bg-white/[0.02] transition">
                   <td className="px-3.5 py-2.5 text-text">
+                    {p.photoId && <img src={mediaUrl(p.photoId)} alt="" loading="lazy" className="inline-block w-8 h-8 rounded object-cover align-middle mr-2.5" />}
                     {p.name}
                     <div className="md:hidden text-[11px] text-text-faint font-normal mt-0.5">{p.category} · {p.size}{p.status === 'nonaktif' ? ' · Nonaktif' : ''}</div>
                   </td>
@@ -255,11 +301,11 @@ export default function Produk() {
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={closeModal}
         title={editing ? 'Edit Produk' : 'Tambah Produk'}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>
+            <Button variant="secondary" onClick={closeModal}>
               Batal
             </Button>
             <Button onClick={handleSubmit} disabled={!isValid || saving}>
@@ -327,6 +373,36 @@ export default function Produk() {
               onChange={(e) => setForm({ ...form, costPrice: Math.max(0, Number(e.target.value)) })}
             />
           </FormField>
+          <div className="space-y-2">
+            <span className="block text-xs font-medium text-text-muted">Foto produk (tampil di toko online)</span>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-20 rounded-lg border border-border bg-bg overflow-hidden flex items-center justify-center shrink-0">
+                {form.photoId ? (
+                  <img src={mediaUrl(form.photoId)} alt="Foto produk" className="w-full h-full object-cover" />
+                ) : (
+                  <ImagePlus size={20} className="text-text-faint" aria-hidden="true" />
+                )}
+              </div>
+              <div className="flex flex-col gap-2 items-start">
+                <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="Pilih foto produk" onChange={(e) => onPickPhoto(e.target.files?.[0])} />
+                <Button type="button" variant="secondary" size="sm" disabled={photoBusy} onClick={() => fileInput.current?.click()}>
+                  {photoBusy ? 'Mengunggah...' : form.photoId ? 'Ganti foto' : 'Pilih foto'}
+                </Button>
+                {form.photoId && (
+                  <Button type="button" variant="ghost" size="sm" onClick={removePhoto}>
+                    Hapus foto
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+          <FormField label="Deskripsi (opsional, tampil di halaman produk)">
+            <Textarea rows={3} maxLength={2000} value={form.description ?? ''} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </FormField>
+          <label className="flex items-center gap-2.5 text-sm text-text cursor-pointer min-h-[44px] lg:min-h-0">
+            <input type="checkbox" className="w-4 h-4 accent-[#8b5cf6]" checked={form.showOnline !== false} onChange={(e) => setForm({ ...form, showOnline: e.target.checked })} />
+            Tampilkan di toko online
+          </label>
           <FormField label={`Batas Stok Menipis (${form.unit === 'ml' ? 'ml' : 'pcs'})`}>
             <Input
               type="number"

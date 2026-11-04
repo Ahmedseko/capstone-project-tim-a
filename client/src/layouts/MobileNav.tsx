@@ -9,25 +9,29 @@ import {
   BarChart3,
   Settings,
   Tags,
+  PackageCheck,
   LogOut,
   X,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../hooks/useAuth';
+import { useOrderBadge } from '../hooks/useOrderBadge';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/produk', label: 'Produk', icon: Package },
   { to: '/stok', label: 'Stok', icon: Boxes },
   { to: '/penjualan', label: 'Penjualan', icon: ShoppingCart },
+  { to: '/pesanan-online', label: 'Pesanan Online', icon: PackageCheck },
   { to: '/closing', label: 'Closing Harian', icon: ClipboardCheck },
-  { to: '/katalog', label: 'Katalog', icon: Tags, adminOnly: true },
+  { to: '/katalog-harga', label: 'Katalog', icon: Tags, adminOnly: true },
   { to: '/laporan', label: 'Laporan', icon: BarChart3, adminOnly: true },
   { to: '/pengaturan', label: 'Pengaturan', icon: Settings, adminOnly: true },
 ];
 
 export function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, logout } = useAuth();
+  const newOrders = useOrderBadge();
   if (!open) return null;
   const items = navItems.filter((item) => !item.adminOnly || user?.role === 'admin');
 
@@ -55,7 +59,10 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
               }
             >
               <Icon size={15} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {to === '/pesanan-online' && newOrders > 0 && (
+                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center">{newOrders}</span>
+              )}
             </NavLink>
           ))}
         </nav>

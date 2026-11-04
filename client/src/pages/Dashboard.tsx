@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { ShoppingBag, Wallet, Package2, AlertTriangle, Trophy, TrendingUp } from 'lucide-react';
+import { ShoppingBag, Wallet, Package2, AlertTriangle, Trophy, TrendingUp, Inbox, Hourglass, CheckCircle2, CalendarDays } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { StatCard } from '../components/StatCard';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -43,6 +44,19 @@ export default function Dashboard() {
         )}
         <StatCard label="Produk Terjual" value={`${data.itemsSoldToday} item`} icon={Package2} />
         <StatCard label="Stok Menipis" value={`${data.lowStockCount} produk`} icon={AlertTriangle} tone="warning" />
+      </div>
+
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4 gap-3">
+        <Link to="/pesanan-online" aria-label="Pesanan baru">
+          <StatCard label="Pesanan Baru" value={`${data.onlineOrders.baru} pesanan`} icon={Inbox} tone={data.onlineOrders.baru > 0 ? 'warning' : 'accent'} hint="Pesanan online menunggu konfirmasi" />
+        </Link>
+        <Link to="/pesanan-online" aria-label="Pesanan diproses">
+          <StatCard label="Sedang Diproses" value={`${data.onlineOrders.diproses} pesanan`} icon={Hourglass} hint="Dikonfirmasi sampai siap" />
+        </Link>
+        <Link to="/pesanan-online" aria-label="Pesanan selesai">
+          <StatCard label="Pesanan Selesai" value={`${data.onlineOrders.selesaiBulanIni} pesanan`} icon={CheckCircle2} tone="success" hint="Bulan ini" />
+        </Link>
+        <StatCard label="Penjualan Bulan Ini" value={formatCurrency(data.revenueMonth)} icon={CalendarDays} tone="success" hint={`${data.salesMonth} transaksi`} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

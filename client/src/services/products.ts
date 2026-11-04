@@ -10,6 +10,9 @@ export interface ProductInput {
   costPrice: number;
   lowStockThreshold: number;
   catalogId?: number | null;
+  description?: string;
+  showOnline?: boolean;
+  photoId?: number | null;
 }
 
 export function listProducts() {

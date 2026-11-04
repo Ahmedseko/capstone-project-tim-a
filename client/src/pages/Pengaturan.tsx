@@ -3,7 +3,8 @@ import { Plus, Pencil, Power, Users as UsersIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Input, Select, FormField } from '../components/ui/Input';
+import { Input, Select, FormField, Textarea } from '../components/ui/Input';
+import { StorePhotosManager } from '../components/StorePhotosManager';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
 import { useToast } from '../hooks/useToast';
@@ -19,6 +20,11 @@ const defaultSettings: Settings = {
   phone: '',
   currency: 'IDR',
   defaultLowStockThreshold: 5,
+  email: '',
+  mapsUrl: '',
+  openingHours: '',
+  storeProfile: '',
+  shopeeUrl: '',
 };
 
 const emptyUserForm = { name: '', email: '', password: '', role: 'staff' as Role };
@@ -60,8 +66,8 @@ export default function Pengaturan() {
       const updated = await updateSettings(form);
       setForm(updated);
       showToast('Pengaturan berhasil disimpan.');
-    } catch {
-      showToast('Gagal menyimpan pengaturan.', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal menyimpan pengaturan.', 'error');
     } finally {
       setSaving(false);
     }
@@ -135,13 +141,33 @@ export default function Pengaturan() {
             <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </FormField>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <FormField label="Nomor Telepon">
+            <FormField label="Nomor Telepon / WhatsApp">
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </FormField>
             <FormField label="Mata Uang">
               <Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} />
             </FormField>
           </div>
+          <FormField label="Email">
+            <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nama@email.com" />
+          </FormField>
+          <FormField label="Link Google Maps (tombol &quot;Buka Google Maps&quot;)">
+            <Input value={form.mapsUrl} onChange={(e) => setForm({ ...form, mapsUrl: e.target.value })} placeholder="https://maps.app.goo.gl/..." />
+          </FormField>
+          <FormField label="Link Shopee (opsional)">
+            <Input value={form.shopeeUrl} onChange={(e) => setForm({ ...form, shopeeUrl: e.target.value })} placeholder="https://shopee.co.id/nama-toko" />
+          </FormField>
+          <FormField label="Jam Operasional">
+            <Textarea
+              rows={3}
+              value={form.openingHours}
+              onChange={(e) => setForm({ ...form, openingHours: e.target.value })}
+              placeholder={'Senin - Sabtu: 08.00 - 20.00\nMinggu: 09.00 - 17.00'}
+            />
+          </FormField>
+          <FormField label="Profil Singkat Toko">
+            <Textarea rows={4} value={form.storeProfile} onChange={(e) => setForm({ ...form, storeProfile: e.target.value })} placeholder="Ditampilkan di beranda toko online." />
+          </FormField>
           <FormField label="Batas Peringatan Stok Menipis">
             <Input
               type="number"
@@ -158,6 +184,8 @@ export default function Pengaturan() {
           {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
         </Button>
       </div>
+
+      <StorePhotosManager />
 
       <Card className="overflow-hidden">
         <CardHeader>
