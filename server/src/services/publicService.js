@@ -35,6 +35,7 @@ export async function getCatalog() {
         unit: p.unit,
         price: Number(p.price),
         available: p.stock > 0,
+        limited: p.stock > 0 && p.stock <= p.low_stock_threshold, // hanya penanda; angka stok tidak dikirim
         photoId: p.photo_id,
         photoIds: photosOf(p),
         description: p.description ?? '',

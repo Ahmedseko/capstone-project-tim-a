@@ -8,7 +8,6 @@ import { MobileNav } from './MobileNav';
 const titles: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/produk': 'Produk',
-  '/katalog-harga': 'Katalog Harga',
   '/pesanan-online': 'Pesanan Online',
   '/etalase': 'Etalase Online',
   '/stok': 'Stok',

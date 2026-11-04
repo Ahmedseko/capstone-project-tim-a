@@ -48,7 +48,7 @@ export async function getProductById(id) {
   return rows[0] ? mapProduct(rows[0]) : null;
 }
 
-export async function createProduct({ name, category, size, unit, price, costPrice, lowStockThreshold, catalogId, description, showOnline, photoId }) {
+export async function createProduct({ name, category, size, unit, price, costPrice, lowStockThreshold, catalogId, description, showOnline, photoId, stock, status, userId }) {
   if (!name?.trim() || !category?.trim() || !size?.trim()) {
     throw new AppError('Nama, kategori, dan ukuran produk wajib diisi.', 400);
   }
@@ -67,15 +67,40 @@ export async function createProduct({ name, category, size, unit, price, costPri
     throw new AppError('Satuan produk tidak valid.', 400);
   }
 
+  const initialStock = stock == null || stock === '' ? 0 : Number(stock);
+  if (!Number.isInteger(initialStock) || initialStock < 0) {
+    throw new AppError('Stok awal harus bilangan bulat 0 atau lebih.', 400);
+  }
+  const productStatus = status ?? 'aktif';
+  if (!['aktif', 'nonaktif'].includes(productStatus)) {
+    throw new AppError('Status produk tidak valid.', 400);
+  }
+
   const cleanDesc = cleanDescription(description);
   const cleanPhoto = await assertProductPhoto(photoId);
 
-  const [result] = await pool.query(
-    'INSERT INTO products (catalog_id, name, category, size, unit, price, cost_price, stock, low_stock_threshold, status, description, show_online, photo_id) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)',
-    [catalogId ?? null, name.trim(), category.trim(), size.trim(), productUnit, price, Number(costPrice ?? 0), lowStockThreshold ?? 5, 'aktif', cleanDesc, showOnline === false ? 0 : 1, cleanPhoto],
-  );
-
-  return getProductById(result.insertId);
+  // Produk dan catatan stok awal harus berhasil bersama-sama, supaya stok tidak pernah tanpa riwayat.
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [result] = await conn.query(
+      'INSERT INTO products (catalog_id, name, category, size, unit, price, cost_price, stock, low_stock_threshold, status, description, show_online, photo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [catalogId ?? null, name.trim(), category.trim(), size.trim(), productUnit, price, Number(costPrice ?? 0), initialStock, lowStockThreshold ?? 5, productStatus, cleanDesc, showOnline === false ? 0 : 1, cleanPhoto],
+    );
+    if (initialStock > 0) {
+      await conn.query(
+        "INSERT INTO stock_movements (product_id, type, quantity, stock_before, stock_after, note, user_id) VALUES (?, 'masuk', ?, 0, ?, 'Stok awal produk', ?)",
+        [result.insertId, initialStock, initialStock, userId],
+      );
+    }
+    await conn.commit();
+    return getProductById(result.insertId);
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
 }
 
 export async function updateProduct(id, updates) {

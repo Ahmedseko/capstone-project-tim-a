@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, History, Trash2, ArrowRight } from 'lucide-react';
+import { Plus, History, Trash2, ArrowRight, Pencil } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -9,7 +9,7 @@ import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
 import { useToast } from '../hooks/useToast';
 import { listProducts } from '../services/products';
-import { listStockMovements, addStock } from '../services/stock';
+import { listStockMovements, addStock, adjustStock } from '../services/stock';
 import type { Product, StockMovement, StockMovementType } from '../types';
 import { ApiRequestError } from '../services/api';
 import { formatDate, todayIso } from '../utils/format';
@@ -43,6 +43,11 @@ export default function Stok() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  // edit langsung di baris: stok aktual + alasan
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editStock, setEditStock] = useState('');
+  const [editNote, setEditNote] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   function load() {
     setLoading(true);
@@ -106,15 +111,35 @@ export default function Stok() {
     }
   }
 
+  function startEdit(p: Product) {
+    setEditId(p.id);
+    setEditStock(String(p.stock));
+    setEditNote('');
+  }
+
+  async function saveEdit(p: Product) {
+    setEditSaving(true);
+    try {
+      await adjustStock({ productId: p.id, newStock: Number(editStock), note: editNote.trim() || undefined });
+      showToast(`Stok ${p.name} diperbarui menjadi ${Number(editStock)} ${p.unit}.`);
+      setEditId(null);
+      load();
+    } catch (err) {
+      showToast(err instanceof ApiRequestError ? err.message : 'Gagal menyimpan stok.', 'error');
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
   const isValid = lines.length > 0 && lines.every((l) => l.productId !== null && l.quantity > 0);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-text-muted">Pantau stok saat ini dan riwayat pergerakan stok.</p>
+        <p className="text-sm text-text-muted">Klik Edit pada baris untuk koreksi stok. Barang masuk dalam jumlah banyak: Stok Masuk Massal.</p>
         <Button onClick={openModal}>
           <Plus size={15} />
-          Tambah Stok
+          Stok Masuk Massal
         </Button>
       </div>
 
@@ -123,10 +148,10 @@ export default function Stok() {
           Stok Saat Ini
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm max-md:[&_:is(th,td):nth-child(2)]:hidden max-md:[&_:is(th,td):nth-child(4)]:hidden">
+          <table className="w-full text-sm max-md:[&_:is(th,td):nth-child(2)]:hidden max-md:[&_:is(th,td):nth-child(4)]:hidden max-md:[&_:is(th,td):nth-child(5)]:hidden">
             <thead>
               <tr className="border-b border-border bg-bg/50">
-                {['Produk', 'Kategori', 'Stok', 'Batas Minimum', 'Status'].map((h) => (
+                {['Produk', 'Ukuran', 'Stok', 'Batas Minimum', 'Status', 'Aksi'].map((h) => (
                   <th key={h} className="text-left font-medium text-text-faint text-[11px] uppercase tracking-wide px-3.5 py-2.5">
                     {h}
                   </th>
@@ -136,26 +161,82 @@ export default function Stok() {
             <tbody className="divide-y divide-border">
               {!loading && activeProducts.length === 0 && (
                 <tr>
-                  <td colSpan={5}>
+                  <td colSpan={6}>
                     <EmptyState message="Belum ada data produk." />
                   </td>
                 </tr>
               )}
               {activeProducts.map((p) => {
                 const low = p.stock <= p.lowStockThreshold;
+                const editingRow = editId === p.id;
+                const diff = Number(editStock) - p.stock;
+                const needNote = editingRow && diff < 0 && !editNote.trim();
+                const canSave = editingRow && editStock !== '' && Number.isInteger(Number(editStock)) && Number(editStock) >= 0 && diff !== 0 && !needNote;
                 return (
-                  <tr key={p.id} className="hover:bg-white/[0.02] transition">
+                  <tr key={p.id} className="hover:bg-white/[0.02] transition align-top">
                     <td className="px-3.5 py-2.5 text-text">
                       {p.name}
-                      <div className="md:hidden text-[11px] text-text-faint font-normal mt-0.5">{p.category}</div>
+                      <div className="md:hidden text-[11px] text-text-faint font-normal mt-0.5">
+                        {p.size} · <span className={p.stock === 0 ? 'text-danger' : low ? 'text-warning' : 'text-success'}>{p.stock === 0 ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
+                      </div>
                     </td>
-                    <td className="px-3.5 py-2.5 text-text-muted">{p.category}</td>
+                    <td className="px-3.5 py-2.5 text-text-muted font-mono">{p.size}</td>
                     <td className="px-3.5 py-2.5 font-mono tnum text-text">
-                      {p.stock} <span className="text-text-faint">{p.unit}</span>
+                      {editingRow ? (
+                        <div className="space-y-1.5 min-w-[150px]">
+                          <div className="flex items-center gap-1.5">
+                            <Input
+                              type="number"
+                              min={0}
+                              step={1}
+                              autoFocus
+                              aria-label={`Stok aktual ${p.name}`}
+                              value={editStock}
+                              onChange={(e) => setEditStock(e.target.value)}
+                              className="w-24"
+                            />
+                            <span className="text-text-faint">{p.unit}</span>
+                            {diff !== 0 && Number.isFinite(diff) && (
+                              <span className={diff < 0 ? 'text-danger text-xs' : 'text-success text-xs'}>
+                                {diff > 0 ? '+' : ''}
+                                {diff}
+                              </span>
+                            )}
+                          </div>
+                          <Input
+                            aria-label="Catatan perubahan stok"
+                            placeholder={diff < 0 ? 'Alasan (wajib)' : 'Catatan (opsional)'}
+                            value={editNote}
+                            maxLength={255}
+                            onChange={(e) => setEditNote(e.target.value)}
+                            className={'font-sans ' + (needNote ? 'border-danger/60' : '')}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          {p.stock} <span className="text-text-faint">{p.unit}</span>
+                        </>
+                      )}
                     </td>
                     <td className="px-3.5 py-2.5 font-mono tnum text-text-muted">{p.lowStockThreshold}</td>
                     <td className="px-3.5 py-2.5">
-                      {low ? <Badge tone="warning">Menipis</Badge> : <Badge tone="success">Aman</Badge>}
+                      {p.stock === 0 ? <Badge tone="danger">Habis</Badge> : low ? <Badge tone="warning">Menipis</Badge> : <Badge tone="success">Aman</Badge>}
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      {editingRow ? (
+                        <div className="flex flex-col md:flex-row gap-1.5">
+                          <Button size="sm" onClick={() => saveEdit(p)} disabled={!canSave || editSaving}>
+                            {editSaving ? '...' : 'Save'}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditId(null)} disabled={editSaving}>
+                            Batal
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="secondary" onClick={() => startEdit(p)} aria-label={`Edit stok ${p.name}`}>
+                          <Pencil size={13} /> Edit
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -217,8 +298,8 @@ export default function Stok() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Tambah Stok"
-        description="Bisa tambah stok untuk beberapa produk sekaligus."
+        title="Stok Masuk Massal"
+        description="Catat barang masuk untuk beberapa produk sekaligus."
         size="lg"
         footer={
           <>

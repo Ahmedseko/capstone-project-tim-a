@@ -32,7 +32,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
               {!racik && product.size ? ` · ${product.size}` : ''}
             </p>
           </div>
-          <Badge tone={product.available ? 'success' : 'neutral'}>{product.available ? 'Tersedia' : 'Habis'}</Badge>
+          <Badge tone={!product.available ? 'neutral' : product.limited ? 'warning' : 'success'}>{!product.available ? 'Habis' : product.limited ? 'Stok terbatas' : 'Tersedia'}</Badge>
         </div>
 
         <div className="text-[15px] font-bold text-accent-glow">

@@ -8,7 +8,6 @@ import { AppLayout } from './layouts/AppLayout';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Produk from './pages/Produk';
-import Katalog from './pages/Katalog';
 import Stok from './pages/Stok';
 import Penjualan from './pages/Penjualan';
 import ClosingHarian from './pages/ClosingHarian';
@@ -59,14 +58,7 @@ export default function App() {
           >
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/produk" element={<Produk />} />
-            <Route
-              path="/katalog-harga"
-              element={
-                <ProtectedRoute adminOnly>
-                  <Katalog />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/katalog-harga" element={<Navigate to="/produk" replace />} />
             <Route path="/stok" element={<Stok />} />
             <Route path="/penjualan" element={<Penjualan />} />
             <Route path="/pesanan-online" element={<PesananOnline />} />

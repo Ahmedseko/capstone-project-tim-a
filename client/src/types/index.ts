@@ -11,17 +11,6 @@ export interface User {
 export type ProductStatus = 'aktif' | 'nonaktif';
 export type ProductUnit = 'botol' | 'ml';
 
-export interface CatalogItem {
-  id: number;
-  name: string;
-  category: string;
-  size: string;
-  unit: ProductUnit;
-  price: number;
-  costPrice: number;
-  linkedCount: number;
-}
-
 export interface Product {
   id: number;
   catalogId: number | null;
@@ -241,6 +230,7 @@ export interface CatalogProduct {
   unit: ProductUnit;
   price: number;
   available: boolean;
+  limited: boolean; // stok mendekati batas menipis (angka stok tidak dikirim ke publik)
   photoId: number | null;
   photoIds: number[];
   description: string;

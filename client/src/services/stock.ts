@@ -15,3 +15,8 @@ export function listStockMovements() {
 export function addStock(input: StockAddInput) {
   return api.post<StockMovement>('/stock/add', input);
 }
+
+// Koreksi stok manual: newStock = stok aktual. Wajib beralasan kalau stok dikurangi.
+export function adjustStock(input: { productId: number; newStock: number; note?: string }) {
+  return api.post<StockMovement>('/stock/adjust', input);
+}

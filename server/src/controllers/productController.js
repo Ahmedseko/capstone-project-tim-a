@@ -8,7 +8,7 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const create = asyncHandler(async (req, res) => {
-  const product = await productService.createProduct(req.body);
+  const product = await productService.createProduct({ ...req.body, userId: req.user.id });
   res.status(201).json(product);
 });
 

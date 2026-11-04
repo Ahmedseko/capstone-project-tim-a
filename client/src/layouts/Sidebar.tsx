@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Package,
   Boxes,
-  Tags,
   PackageCheck,
   Store,
   ShoppingCart,
@@ -20,7 +19,6 @@ import { useOrderBadge } from '../hooks/useOrderBadge';
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/produk', label: 'Produk', icon: Package },
-  { to: '/katalog-harga', label: 'Katalog Harga', icon: Tags, adminOnly: true },
   { to: '/stok', label: 'Stok', icon: Boxes },
   { to: '/penjualan', label: 'Penjualan', icon: ShoppingCart },
   { to: '/pesanan-online', label: 'Pesanan Online', icon: PackageCheck },

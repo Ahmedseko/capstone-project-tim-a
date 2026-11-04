@@ -52,11 +52,14 @@ async function computeProductStockLines(conn, date) {
 
   const addedByProduct = new Map();
   const soldByProduct = new Map();
+  const adjustedByProduct = new Map(); // koreksi manual hari ini (bertanda: + naik, - turun)
   for (const m of movements) {
     if (m.type === 'masuk') {
       addedByProduct.set(m.product_id, (addedByProduct.get(m.product_id) ?? 0) + m.quantity);
     } else if (m.type === 'penjualan') {
       soldByProduct.set(m.product_id, (soldByProduct.get(m.product_id) ?? 0) + -m.quantity);
+    } else if (m.type === 'penyesuaian') {
+      adjustedByProduct.set(m.product_id, (adjustedByProduct.get(m.product_id) ?? 0) + m.quantity);
     }
   }
 
@@ -64,7 +67,7 @@ async function computeProductStockLines(conn, date) {
     const stockAdded = addedByProduct.get(p.id) ?? 0;
     const quantitySold = soldByProduct.get(p.id) ?? 0;
     const systemStock = p.stock;
-    const openingStock = systemStock - stockAdded + quantitySold;
+    const openingStock = systemStock - stockAdded - (adjustedByProduct.get(p.id) ?? 0) + quantitySold;
     return {
       productId: p.id,
       productName: p.name,

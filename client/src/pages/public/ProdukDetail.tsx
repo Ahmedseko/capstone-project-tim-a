@@ -116,7 +116,7 @@ export default function ProdukDetail() {
           <div className="flex flex-col gap-2">
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-text leading-tight">{product.name}</h1>
-              <Badge tone={product.available ? 'success' : 'neutral'}>{product.available ? 'Tersedia' : 'Habis'}</Badge>
+              <Badge tone={!product.available ? 'neutral' : product.limited ? 'warning' : 'success'}>{!product.available ? 'Habis' : product.limited ? 'Stok terbatas' : 'Tersedia'}</Badge>
             </div>
             <p className="text-sm text-text-muted">
               {categoryLabel(product.category)}

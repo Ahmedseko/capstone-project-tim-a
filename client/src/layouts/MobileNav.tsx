@@ -8,7 +8,6 @@ import {
   ClipboardCheck,
   BarChart3,
   Settings,
-  Tags,
   PackageCheck,
   Store,
   LogOut,
@@ -26,7 +25,6 @@ const navItems = [
   { to: '/pesanan-online', label: 'Pesanan Online', icon: PackageCheck },
   { to: '/etalase', label: 'Etalase Online', icon: Store },
   { to: '/closing', label: 'Closing Harian', icon: ClipboardCheck },
-  { to: '/katalog-harga', label: 'Katalog', icon: Tags, adminOnly: true },
   { to: '/laporan', label: 'Laporan', icon: BarChart3, adminOnly: true },
   { to: '/pengaturan', label: 'Pengaturan', icon: Settings, adminOnly: true },
 ];

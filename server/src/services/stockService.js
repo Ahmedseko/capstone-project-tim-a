@@ -69,3 +69,52 @@ export async function addStock({ productId, quantity, note, userId, date }) {
     conn.release();
   }
 }
+
+// Koreksi stok manual: isi stok aktual. Selisih dicatat sebagai 'penyesuaian'. Tidak ada hapus riwayat;
+// kalau salah, lakukan koreksi baru. Stok dikurangi wajib beralasan.
+export async function adjustStock({ productId, newStock, note, userId }) {
+  const target = Number(newStock);
+  if (!Number.isInteger(target) || target < 0) {
+    throw new AppError('Stok aktual harus bilangan bulat 0 atau lebih.', 400);
+  }
+  const cleanNote = String(note ?? '').trim();
+  if (cleanNote.length > 255) {
+    throw new AppError('Catatan maksimal 255 karakter.', 400);
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [productRows] = await conn.query('SELECT * FROM products WHERE id = ? FOR UPDATE', [productId]);
+    const product = productRows[0];
+    if (!product) {
+      throw new AppError('Produk tidak ditemukan.', 404);
+    }
+
+    const stockBefore = product.stock;
+    const difference = target - stockBefore;
+    if (difference === 0) {
+      throw new AppError('Stok sama dengan sebelumnya, tidak ada yang diubah.', 400);
+    }
+    if (difference < 0 && !cleanNote) {
+      throw new AppError('Alasan wajib diisi saat stok dikurangi.', 400);
+    }
+
+    await conn.query('UPDATE products SET stock = ? WHERE id = ?', [target, productId]);
+    const [result] = await conn.query(
+      "INSERT INTO stock_movements (product_id, type, quantity, stock_before, stock_after, note, user_id) VALUES (?, 'penyesuaian', ?, ?, ?, ?, ?)",
+      [productId, difference, stockBefore, target, cleanNote || 'Penyesuaian stok manual', userId],
+    );
+
+    await conn.commit();
+
+    const [rows] = await pool.query(`${SELECT_MOVEMENTS} WHERE sm.id = ?`, [result.insertId]);
+    return mapMovement(rows[0]);
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+}

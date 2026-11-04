@@ -9,7 +9,8 @@ export interface ProductInput {
   price: number;
   costPrice: number;
   lowStockThreshold: number;
-  catalogId?: number | null;
+  stock?: number; // stok awal (hanya saat membuat produk)
+  status?: Product['status'];
   description?: string;
   showOnline?: boolean;
   photoId?: number | null;
