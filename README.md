@@ -14,7 +14,8 @@ Akun untuk penilai diberikan terpisah oleh tim; akun demo di bagian "Akun Demo" 
 ## Fitur Utama
 
 - **Racik parfum per ml**: parfum dijual per mililiter (mis. Baccarat Rp4.000/ml) dan dimasukkan ke botol pilihan pembeli. Harga = `isi (ml) × harga per ml + harga botol`. Ukuran botol kelipatan 5 ml (5–100) dan isi tidak boleh melebihi ukuran botol.
-- **Katalog Harga** (admin): daftar harga eceran acuan. Saat menambah produk, cukup ketik namanya dan harga terisi otomatis. Mengubah harga katalog ikut mengubah produk terkait; transaksi lama tidak berubah.
+- **Produk sebagai data utama**: harga jual, modal, stok awal, foto, dan deskripsi diisi sekali di satu form Produk, lalu dipakai bersama oleh Penjualan, Pesanan Online, dan Etalase Online. Mengubah harga produk berlaku untuk transaksi berikutnya; transaksi lama tidak berubah (harga disimpan per transaksi). Menu Katalog Harga lama sudah disembunyikan.
+- **Stok**: koreksi stok langsung di baris tabel (Edit → isi stok aktual → Save). Mengurangi stok wajib disertai alasan, dan setiap perubahan tercatat di riwayat stok (tidak bisa dihapus; jika salah, lakukan koreksi baru). Barang masuk banyak sekaligus: **Stok Masuk Massal**.
 - **Stok** dalam ml (varian) dan pcs (botol & produk lain), lengkap dengan riwayat pergerakan stok.
 - **Penjualan**: diskon (Rp/%), catatan pembeli, uang diterima + kembalian, **struk** yang bisa dicetak ke printer apa pun atau disimpan sebagai PDF, dan **pembatalan transaksi** oleh admin (stok dikembalikan, keluar dari laporan).
 - **Harga modal & laba** (admin): modal per ml / per botol diisi di Katalog atau Produk. Modal disalin ke tiap transaksi, jadi laba lama tidak berubah saat modal berganti. Laporan dan Dashboard menampilkan laba kotor; transaksi tanpa modal dihitung terpisah, bukan dianggap untung penuh. Staff tidak melihat modal maupun laba.
@@ -199,11 +200,11 @@ Kalau sudah selesai pakai:
 
 ## Cara Mencoba Cepat (untuk Penilai)
 
-1. Login sebagai **Admin** → buka **Katalog Harga**: lihat daftar harga per ml dan harga botol; coba ubah satu harga.
-2. Buka **Produk → Tambah Produk**, ketik nama dari katalog (mis. `Vanilla`): kategori, satuan, dan harga terisi otomatis.
+1. Login sebagai **Admin** → buka **Produk**: lihat harga per ml dan harga botol; coba **Edit** satu harga.
+2. Buka **Produk → Tambah Produk**: isi nama, kategori, ukuran, satuan, harga, modal, dan **stok awal** dalam satu form. Produk langsung muncul di Stok, Penjualan, dan Etalase Online. Coba juga **Stok → Edit** pada satu baris untuk koreksi stok.
 3. Buka **Penjualan → Racik Parfum**: pilih varian, ukuran botol, dan isi (mis. 25 ml dalam botol 30 ml) → tambah ke keranjang → isi diskon / uang diterima → **Simpan Penjualan**. Struk muncul; coba **Cetak / Simpan PDF**.
 4. Dari daftar **Transaksi Hari Ini**, klik **Detail** lalu **Batalkan Transaksi** (admin): stok kembali dan transaksi keluar dari laporan.
-5. Isi **harga modal** di Katalog Harga (data contoh sudah terisi), lalu lihat **Laporan** (Laba Kotor) dan **Dashboard** (Laba Hari Ini).
+5. Isi **harga modal** di form Produk (data contoh sudah terisi), lalu lihat **Laporan** (Laba Kotor) dan **Dashboard** (Laba Hari Ini).
 6. Buka **Closing Harian**: isi modal awal laci dan uang hasil hitung, lihat selisih kas, lalu tutup hari.
 7. Lihat juga **Stok** (riwayat pergerakan stok).
 8. **Sisi konsumen**: buka `/` tanpa login → katalog → pilih parfum, ukuran botol, dan isi → keranjang → checkout (ambil di toko / dikirim) → kirim pesanan. Catat nomor pesanannya, lalu coba **Cek Pesanan**.
@@ -216,8 +217,8 @@ Login → Dashboard → Produk → Stok → Penjualan → Closing Harian → Lap
 
 ## Catatan Peran
 
-- **Owner/Admin**: akses penuh (produk, foto produk, katalog harga, stok, penjualan, pesanan online, pembatalan transaksi, closing, laporan, pengaturan toko dan foto toko, manajemen pengguna).
-- **Staff**: melihat produk dan stok, input stok masuk, mencatat penjualan dan mencetak struk, **melihat/mengonfirmasi/mengubah status pesanan online dan menghubungi pelanggan lewat WhatsApp**, closing harian. Tidak memiliki akses ke Katalog Harga, Laporan, Pengaturan, pengelolaan foto/akun, dan tidak bisa membatalkan transaksi kasir.
+- **Owner/Admin**: akses penuh (produk beserta harga dan foto, stok dan koreksi stok, penjualan, pesanan online, pembatalan transaksi, closing, laporan, pengaturan toko dan foto toko, manajemen pengguna).
+- **Staff**: melihat produk dan stok, input stok masuk dan koreksi stok, mencatat penjualan dan mencetak struk, **melihat/mengonfirmasi/mengubah status pesanan online dan menghubungi pelanggan lewat WhatsApp**, closing harian. Tidak memiliki akses ke tambah/edit/hapus produk, Laporan, Pengaturan, pengelolaan foto/akun, dan tidak bisa membatalkan transaksi kasir.
 - **Konsumen** (tanpa akun): hanya halaman publik dan Cek Pesanan; data publik tidak memuat modal, stok, atau data pelanggan lain.
 
 ## Catatan Produksi (Server)

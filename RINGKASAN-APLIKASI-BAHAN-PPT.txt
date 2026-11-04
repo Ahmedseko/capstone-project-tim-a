@@ -21,7 +21,7 @@ Menggunakan Metode Waterfall"
 
 Deskripsi Singkat:
 Sistem Informasi Manajemen Penjualan dan Stok untuk UMKM Parfum —
-aplikasi web untuk mengelola produk, katalog harga, stok, transaksi
+aplikasi web untuk mengelola produk (harga & stok), transaksi
 penjualan (kasir racik parfum per ml), struk, closing harian dengan
 rekonsiliasi kas dan stok, laporan usaha termasuk laba, toko online untuk
 konsumen (katalog, keranjang, checkout, cek pesanan) dengan pengelolaan
@@ -52,8 +52,9 @@ Tujuan Sistem:
 1. Mendigitalkan pencatatan produk, stok, dan transaksi penjualan.
 2. Mendukung penjualan racik parfum per ml + botol, di samping produk
    per buah (bibit, produk pendukung), dalam satu sistem.
-3. Menyediakan katalog harga yang diatur admin, sehingga harga
-   konsisten dan terisi otomatis saat menambah produk.
+3. Menjadikan Produk satu-satunya sumber data harga dan stok yang
+   diatur admin, sehingga tidak ada input ganda dan harga konsisten
+   di kasir, pesanan online, dan etalase.
 4. Menyediakan mekanisme rekonsiliasi harian (closing): stok sistem
    vs stok fisik, dan uang tunai seharusnya vs uang di laci.
 5. Menyediakan laporan penjualan dan laba (termasuk ekspor Excel)
@@ -263,7 +264,6 @@ Alur Data Penting (contoh: satu penjualan racik parfum):
   /login          Login                Publik (belum login)
   /dashboard      Dashboard            Admin & Staff
   /produk         Manajemen Produk     Admin & Staff (edit: admin saja)
-  /katalog-harga  Katalog Harga        Admin saja
   /pesanan-online Pesanan Online       Admin & Staff
   /stok           Manajemen Stok       Admin & Staff
   /penjualan      Penjualan (Kasir)    Admin & Staff
@@ -308,26 +308,34 @@ C. MANAJEMEN PRODUK (Produk)
        daftar kelipatan 5 ml (5-100 ml).
    - Kategori lain (bibit parfum, produk pendukung, parfum botolan)
      tetap dipakai sebagai pilihan.
-   - Ketik nama produk -> saran dari Katalog Harga; jika dipilih,
-     kategori, ukuran, satuan, harga, dan modal terisi otomatis.
+   - Satu form lengkap: foto, nama, kategori, ukuran, satuan, harga
+     jual, harga modal, STOK AWAL, batas stok menipis, deskripsi,
+     tampil di etalase, status. Stok awal otomatis tercatat di riwayat
+     stok (jenis masuk, "Stok awal produk").
+   - Label harga/stok menyesuaikan satuan (per ml atau per botol).
+   - Aktifkan/nonaktifkan produk langsung dari daftar.
    - Batas stok menipis default menyesuaikan satuan (100 ml untuk
      varian, 10 pcs untuk botol).
    - Filter berdasarkan kategori & status; pencarian produk.
    - Hapus produk: hapus permanen jika belum ada riwayat; otomatis
      dinonaktifkan jika sudah pernah dipakai di transaksi/stok.
 
-D. KATALOG HARGA (Admin saja)
-   - Daftar harga eceran acuan yang ditentukan admin: nama, kategori,
-     ukuran, satuan, harga, harga modal.
-   - Menampilkan jumlah produk yang terhubung ke tiap item.
-   - Mengubah harga/modal katalog ikut memperbarui produk terkait
-     (dengan konfirmasi); transaksi lama tidak berubah karena harga
-     disimpan per transaksi.
-   - Menghapus item katalog tidak menghapus produk terkait.
+D. KATALOG HARGA (DIHENTIKAN DARI ANTARMUKA)
+   - Dulu daftar harga acuan terpisah; kini harga diatur langsung di
+     Produk. Menu dan halamannya disembunyikan. Tabel price_catalog
+     dan kolom products.catalog_id sementara dipertahankan (tidak
+     dipakai) agar data lama aman; akan dibuang lewat migrasi nanti.
 
 E. MANAJEMEN STOK (Stok)
    - Tabel stok saat ini per produk (satuan botol/pcs atau ml).
-   - Tambah stok masuk untuk BANYAK produk sekaligus dalam satu form.
+   - Koreksi stok langsung di baris: Edit -> isi stok aktual -> Save/
+     Batal. Stok dikurangi wajib beralasan; dinaikkan boleh tanpa
+     catatan. Dicatat sebagai penyesuaian (sebelum, sesudah, selisih,
+     user, waktu, catatan). Riwayat tidak bisa dihapus; koreksi salah
+     diperbaiki dengan koreksi baru.
+   - Stok Masuk Massal: catat barang masuk untuk BANYAK produk sekaligus.
+   - Closing Harian ikut menghitung penyesuaian manual sehingga stok
+     awal tetap benar.
    - Riwayat pergerakan stok: stok masuk, penjualan, pembatalan,
      dan penyesuaian (dari closing harian), dengan stok sebelum &
      sesudah.
@@ -448,8 +456,8 @@ K. PENGATURAN & MANAJEMEN PENGGUNA (Admin saja)
   Dashboard                      Ya                 Ya (tanpa laba)
   Lihat Produk                   Ya                 Ya (tanpa modal)
   Tambah/Edit/Hapus Produk       Ya                 Tidak
-  Katalog Harga                  Ya                 Tidak
-  Lihat & Tambah Stok            Ya                 Ya
+  Lihat Stok, Koreksi Stok       Ya                 Ya
+  Stok Masuk Massal              Ya                 Ya
   Penjualan (Kasir) & Struk      Ya                 Ya
   Batalkan Transaksi             Ya                 Tidak
   Closing Harian                 Ya                 Ya
@@ -663,8 +671,8 @@ contoh. Belum ada transaksi — dicoba lewat menu Penjualan.
                           -> berjalan di http://localhost:5173
 4. Buka browser ke http://localhost:5173 dan login.
 
-Alur mencoba cepat: Login (admin) -> Katalog Harga -> Produk (ketik
-nama dari katalog) -> Penjualan > Racik Parfum -> simpan -> struk ->
+Alur mencoba cepat: Login (admin) -> Produk (tambah produk + stok
+awal) -> Stok (edit stok) -> Penjualan > Racik Parfum -> simpan -> struk ->
 batalkan transaksi -> Closing Harian (stok & kas) -> Laporan (laba).
 
 
