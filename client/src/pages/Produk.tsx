@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, Search, Pencil, Trash2, PackageX, Power, ImagePlus } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -14,7 +14,7 @@ import { listProducts, createProduct, updateProduct, deleteProduct, type Product
 import { updateOnlineProduct } from '../services/etalase';
 import { deleteImage, uploadImage } from '../services/media';
 import { mediaUrl } from '../services/public';
-import { resizeImage } from '../utils/image';
+import { blobToDataUrl, resizeImage } from '../utils/image';
 import type { Product, ProductUnit } from '../types';
 import { formatCurrency } from '../utils/format';
 import { CATEGORIES, CATEGORY_DEFAULTS, UNITS } from '../utils/productOptions';
@@ -26,12 +26,37 @@ const emptyForm: ProductInput = {
   unit: 'ml',
   price: 0,
   costPrice: 0,
-  stock: 0,
   lowStockThreshold: 5,
   description: '',
   showOnline: true,
   status: 'aktif',
 };
+
+// Kolom angka memakai teks sementara supaya bisa dikosongkan dan diketik ulang; diparse dan divalidasi saat Simpan.
+type NumKey = 'price' | 'costPrice' | 'stock' | 'lowStockThreshold';
+type Draft = Record<NumKey, string>;
+const emptyDraft: Draft = { price: '', costPrice: '', stock: '', lowStockThreshold: '5' };
+const NUM_RULES: Record<NumKey, { required: boolean; integer: boolean; positive: boolean }> = {
+  price: { required: true, integer: false, positive: true },
+  costPrice: { required: false, integer: false, positive: false },
+  stock: { required: false, integer: true, positive: false },
+  lowStockThreshold: { required: true, integer: true, positive: false },
+};
+
+// Pesan galat untuk satu kolom angka, atau null kalau valid.
+function numError(key: NumKey, text: string): string | null {
+  const rule = NUM_RULES[key];
+  const t = text.trim();
+  if (t === '') return rule.required ? 'Wajib diisi.' : null;
+  const n = Number(t);
+  if (!Number.isFinite(n)) return 'Angka tidak valid.';
+  if (n < 0) return 'Tidak boleh negatif.';
+  if (rule.positive && n <= 0) return 'Harus lebih dari 0.';
+  if (rule.integer && !Number.isInteger(n)) return 'Harus bilangan bulat.';
+  return null;
+}
+
+const MAX_PHOTO_INPUT = 25 * 1024 * 1024;
 
 // Kata satuan di label: ml untuk curah, botol untuk produk per botol/pcs.
 const unitWord = (unit: ProductUnit) => (unit === 'ml' ? 'ml' : 'botol');
@@ -50,8 +75,14 @@ export default function Produk() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductInput>(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [touched, setTouched] = useState<Partial<Record<NumKey, boolean>>>({});
+  const [pendingBlob, setPendingBlob] = useState<Blob | null>(null); // foto terpilih, sudah diperkecil
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [brokenSrc, setBrokenSrc] = useState<string | null>(null);
+  const pickToken = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
 
   function load() {
@@ -88,15 +119,20 @@ export default function Produk() {
   );
 
   function resetPhoto() {
-    if (pendingPreview) URL.revokeObjectURL(pendingPreview);
-    setPendingFile(null);
-    setPendingPreview(null);
+    pickToken.current += 1; // batalkan pemrosesan foto yang masih berjalan
+    setPendingBlob(null);
+    setPreviewSrc(null);
+    setPreviewBusy(false);
+    setPhotoError(null);
+    setBrokenSrc(null);
     if (fileInput.current) fileInput.current.value = '';
   }
 
   function openCreate() {
     setEditing(null);
     setForm(emptyForm);
+    setDraft(emptyDraft);
+    setTouched({});
     resetPhoto();
     setModalOpen(true);
   }
@@ -115,6 +151,13 @@ export default function Produk() {
       showOnline: product.showOnline,
       status: product.status,
     });
+    setDraft({
+      price: String(product.price),
+      costPrice: product.costPrice ? String(product.costPrice) : '',
+      stock: '',
+      lowStockThreshold: String(product.lowStockThreshold),
+    });
+    setTouched({});
     resetPhoto();
     setModalOpen(true);
   }
@@ -124,17 +167,38 @@ export default function Produk() {
     setModalOpen(false);
   }
 
-  function onPickPhoto(file?: File) {
+  // Foto langsung diperkecil (mekanisme yang sama dengan unggahan) lalu dipratinjau sebagai data: URL.
+  async function onPickPhoto(file?: File) {
     if (!file) return;
-    if (pendingPreview) URL.revokeObjectURL(pendingPreview);
-    setPendingFile(file);
-    setPendingPreview(URL.createObjectURL(file));
+    const token = ++pickToken.current;
+    setPreviewBusy(true);
+    setPhotoError(null);
+    try {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        throw new Error('Format foto harus JPG, PNG, atau WebP.');
+      }
+      if (file.size > MAX_PHOTO_INPUT) throw new Error('Ukuran foto terlalu besar (maksimal 25 MB).');
+      const blob = await resizeImage(file).catch(() => {
+        throw new Error('Foto tidak bisa dibaca. Pastikan file adalah gambar JPG, PNG, atau WebP yang tidak rusak.');
+      });
+      const url = await blobToDataUrl(blob);
+      if (token !== pickToken.current) return; // sudah memilih foto lain / modal ditutup
+      setPendingBlob(blob);
+      setPreviewSrc(url);
+      setBrokenSrc(null);
+    } catch (err) {
+      if (token !== pickToken.current) return;
+      setPhotoError(err instanceof Error ? err.message : 'Foto tidak bisa dibaca. Coba foto lain.');
+    } finally {
+      if (token === pickToken.current) setPreviewBusy(false);
+      if (fileInput.current) fileInput.current.value = '';
+    }
   }
 
   // Foto baru jadi foto utama; foto utama lama dipindah ke Tong Sampah (bisa dipulihkan di Etalase Online).
   async function attachPhoto(productId: number, oldMainId: number | null) {
-    if (!pendingFile) return;
-    const { id } = await uploadImage(await resizeImage(pendingFile), 'produk', productId);
+    if (!pendingBlob) return;
+    const { id } = await uploadImage(pendingBlob, 'produk', productId);
     if (oldMainId) {
       await updateOnlineProduct(productId, { mainPhotoId: id });
       await deleteImage(oldMainId);
@@ -155,17 +219,22 @@ export default function Produk() {
   }
 
   async function handleSubmit() {
-    if (!form.name.trim() || form.price <= 0) return;
+    if (!isValid) return;
+    const nums = {
+      price: Number(draft.price),
+      costPrice: draft.costPrice.trim() === '' ? 0 : Number(draft.costPrice),
+      lowStockThreshold: Number(draft.lowStockThreshold),
+    };
     setSaving(true);
     let savedId: number | null = null;
     try {
       if (editing) {
-        const { stock: _stock, ...changes } = form; // stok diubah lewat menu Stok agar riwayatnya tercatat
-        void _stock;
-        await updateProduct(editing.id, changes);
+        // stok diubah lewat menu Stok agar riwayatnya tercatat
+        await updateProduct(editing.id, { ...form, ...nums });
         savedId = editing.id;
       } else {
-        savedId = (await createProduct(form)).id;
+        const stock = draft.stock.trim() === '' ? 0 : Number(draft.stock);
+        savedId = (await createProduct({ ...form, ...nums, stock })).id;
       }
       try {
         await attachPhoto(savedId, editing?.photoId ?? null);
@@ -208,13 +277,27 @@ export default function Produk() {
     }
   }
 
-  const isValid =
-    form.name.trim().length > 0 &&
-    form.price > 0 &&
-    form.lowStockThreshold >= 0 &&
-    (editing || ((form.stock ?? 0) >= 0 && Number.isInteger(form.stock ?? 0)));
+  const activeKeys: NumKey[] = editing ? ['price', 'costPrice', 'lowStockThreshold'] : ['price', 'costPrice', 'stock', 'lowStockThreshold'];
+  const isValid = form.name.trim().length > 0 && activeKeys.every((k) => numError(k, draft[k]) === null);
   const word = unitWord(form.unit);
-  const shownPhoto = pendingPreview ?? (editing?.photoId ? mediaUrl(editing.photoId) : null);
+  const shownPhoto = previewSrc ?? (editing?.photoId ? mediaUrl(editing.photoId) : null);
+  const photoBroken = shownPhoto !== null && brokenSrc === shownPhoto;
+
+  // Props untuk kolom angka: teks bebas diketik; galat tampil setelah diisi atau ditinggalkan.
+  const num = (key: NumKey) => ({
+    type: 'number' as const,
+    inputMode: 'decimal' as const,
+    min: 0,
+    step: NUM_RULES[key].integer ? 1 : 'any',
+    value: draft[key],
+    onChange: (e: ChangeEvent<HTMLInputElement>) => setDraft((d) => ({ ...d, [key]: e.target.value })),
+    onBlur: () => setTouched((t) => ({ ...t, [key]: true })),
+    'aria-invalid': (touched[key] || draft[key] !== '') && numError(key, draft[key]) !== null,
+  });
+  const numMsg = (key: NumKey) => {
+    const msg = touched[key] || draft[key] !== '' ? numError(key, draft[key]) : null;
+    return msg ? <p className="text-[11px] text-danger mt-1">{msg}</p> : null;
+  };
 
   return (
     <div className="space-y-4">
@@ -356,23 +439,27 @@ export default function Produk() {
             <span className="block text-xs font-medium text-text-muted">Foto produk (dipakai di toko online)</span>
             <div className="flex items-center gap-3">
               <div className="w-20 h-20 rounded-lg border border-border bg-bg overflow-hidden flex items-center justify-center shrink-0">
-                {shownPhoto ? (
-                  <img src={shownPhoto} alt="Foto produk" className="w-full h-full object-cover" />
+                {shownPhoto && !photoBroken ? (
+                  <img src={shownPhoto} alt="" onError={() => setBrokenSrc(shownPhoto)} className="w-full h-full object-cover" />
                 ) : (
                   <ImagePlus size={20} className="text-text-faint" aria-hidden="true" />
                 )}
               </div>
               <div className="flex flex-col gap-2 items-start">
                 <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="Pilih foto produk" onChange={(e) => onPickPhoto(e.target.files?.[0])} />
-                <Button type="button" variant="secondary" size="sm" onClick={() => fileInput.current?.click()}>
-                  {shownPhoto ? 'Ganti foto' : 'Pilih foto'}
+                <Button type="button" variant="secondary" size="sm" disabled={previewBusy} onClick={() => fileInput.current?.click()}>
+                  {previewBusy ? 'Memproses...' : shownPhoto ? 'Ganti foto' : 'Pilih foto'}
                 </Button>
-                {editing?.photoId && !pendingFile && (
+                {editing?.photoId && !pendingBlob && (
                   <Button type="button" variant="ghost" size="sm" onClick={removeCurrentPhoto}>
                     Hapus foto
                   </Button>
                 )}
-                <span className="text-[11px] text-text-faint">Foto tambahan: menu Etalase Online.</span>
+                {photoError || photoBroken ? (
+                  <span role="alert" className="text-[11px] text-danger">{photoError ?? 'Foto tidak bisa ditampilkan.'}</span>
+                ) : (
+                  <span className="text-[11px] text-text-faint">Foto tambahan: menu Etalase Online.</span>
+                )}
               </div>
             </div>
           </div>
@@ -382,7 +469,14 @@ export default function Produk() {
           </FormField>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Kategori">
-              <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value, ...CATEGORY_DEFAULTS[e.target.value] })}>
+              <Select
+                value={form.category}
+                onChange={(e) => {
+                  setForm({ ...form, category: e.target.value, ...CATEGORY_DEFAULTS[e.target.value] });
+                  const d = CATEGORY_DEFAULTS[e.target.value];
+                  if (d) setDraft((cur) => ({ ...cur, lowStockThreshold: String(d.lowStockThreshold) }));
+                }}
+              >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -405,22 +499,13 @@ export default function Produk() {
               </Select>
             </FormField>
             <FormField label={`Harga Jual per ${word} (Rp)`}>
-              <Input
-                type="number"
-                min={0}
-                value={form.price || ''}
-                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-              />
+              <Input {...num('price')} />
+              {numMsg('price')}
             </FormField>
           </div>
           <FormField label={`Harga Modal per ${word} (Rp, opsional)`}>
-            <Input
-              type="number"
-              min={0}
-              placeholder="Untuk menghitung laba"
-              value={form.costPrice || ''}
-              onChange={(e) => setForm({ ...form, costPrice: Math.max(0, Number(e.target.value)) })}
-            />
+            <Input {...num('costPrice')} placeholder="Untuk menghitung laba" />
+            {numMsg('costPrice')}
           </FormField>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {editing ? (
@@ -434,23 +519,13 @@ export default function Produk() {
               </FormField>
             ) : (
               <FormField label={`Stok Awal (${word})`}>
-                <Input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={form.stock || ''}
-                  placeholder="0"
-                  onChange={(e) => setForm({ ...form, stock: Math.max(0, Math.floor(Number(e.target.value))) })}
-                />
+                <Input {...num('stock')} placeholder="0" />
+                {numMsg('stock')}
               </FormField>
             )}
             <FormField label={`Batas Stok Menipis (${word})`}>
-              <Input
-                type="number"
-                min={0}
-                value={form.lowStockThreshold}
-                onChange={(e) => setForm({ ...form, lowStockThreshold: Number(e.target.value) })}
-              />
+              <Input {...num('lowStockThreshold')} />
+              {numMsg('lowStockThreshold')}
             </FormField>
           </div>
           <FormField label="Deskripsi (tampil di halaman produk)">

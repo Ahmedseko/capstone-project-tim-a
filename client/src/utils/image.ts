@@ -16,3 +16,13 @@ export async function resizeImage(file: File, maxSide = 1200, quality = 0.82): P
   if (!blob) throw new Error('Gagal memproses gambar.');
   return blob;
 }
+
+// Pratinjau lokal. Sengaja data: URL, bukan URL.createObjectURL: CSP situs hanya mengizinkan img-src 'self' data:.
+export function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Foto tidak bisa dibaca.'));
+    reader.readAsDataURL(blob);
+  });
+}
